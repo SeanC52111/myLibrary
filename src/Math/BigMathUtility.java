@@ -4,12 +4,18 @@
 package Math;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 /**
  * @author chenqian
  *
  */
 public class BigMathUtility {
+
+	public static BigInteger lcm(BigInteger a, BigInteger b){
+		return a.multiply(b).divide(a.gcd(b));
+	}
+	
 
 	public static BigDecimal Square(BigDecimal a){
 		return a.multiply(a);
@@ -34,7 +40,10 @@ public class BigMathUtility {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-
+		BigInteger a = new BigInteger("5"), b = new BigInteger("3");
+		System.out.println(lcm(a, b));
+		a = new BigInteger("5"); b = new BigInteger("15");
+		System.out.println(lcm(a, b));
 	}
 
 }
