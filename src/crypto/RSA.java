@@ -1,7 +1,7 @@
 /**
  * 
  */
-package Crypto;
+package crypto;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package Crypto;
+package crypto;
 
 import java.math.BigInteger;
 

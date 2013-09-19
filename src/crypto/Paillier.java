@@ -1,4 +1,4 @@
-package Crypto;
+package crypto;
 
 /*
  * 
@@ -19,7 +19,7 @@ package Crypto;
 import java.math.*;
 import java.util.*;
 
-import Math.BigMathUtility;
+import math.BigMathUtility;
 
 /**
  * Paillier Cryptosystem <br><br>

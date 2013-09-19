@@ -1,7 +1,7 @@
 /**
  * 
  */
-package Math;
+package math;
 
 import java.awt.Polygon;
 import java.util.ArrayList;

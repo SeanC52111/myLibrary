@@ -1,7 +1,7 @@
 /**
  * 
  */
-package Math;
+package math;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
