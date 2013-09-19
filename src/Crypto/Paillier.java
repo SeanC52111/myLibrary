@@ -234,9 +234,11 @@ public class Paillier {
         
         //System.out.println(BigIntegerUtility.PRIME_Q.modPow(paillier.n, paillier.nsquare));
 
-        BigInteger c = new BigInteger("12345");
-        BigInteger[] coes = paillier.Decrypt2(c);
-        BigInteger c2 = paillier.Encrypt(coes[0], coes[1]);
-        System.out.println(c2);
+        BigInteger c1 = new BigInteger("12345");
+        BigInteger c2 = new BigInteger("2");
+        BigInteger[] coes1 = paillier.Decrypt2(c1);
+        BigInteger[] coes2 = paillier.Decrypt2(c2);
+        BigInteger c3 = paillier.Encrypt(coes1[0].add(coes2[0]), coes1[1].multiply(coes2[1]));
+        System.out.println(c3);
     }
 }
