@@ -1,4 +1,4 @@
-package crypto;
+package IO;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -11,15 +11,16 @@ public class DataIO {
 
 	public static String defaultCharSet = "ISO-8859-1";
 	
-	public static String toHex(String txt) {
-        return toHex(txt.getBytes());
+	
+	public static String toHexFromString(String txt) {
+        return toHexFromBytes(txt.getBytes());
     }
 	
-    public static String fromHex(String hex) {
-        return new String(toByte(hex));
+    public static String toStringfromHex(String hex) {
+        return new String(toBytesFromHex(hex));
     }
 
-    public static byte[] toByte(String hexString) {
+    public static byte[] toBytesFromHex(String hexString) {
         int len = hexString.length()/2;
         byte[] result = new byte[len];
         for (int i = 0; i < len; i++)
@@ -27,7 +28,7 @@ public class DataIO {
         return result;
     }
 
-    public static String toHex(byte[] buf) {
+    public static String toHexFromBytes(byte[] buf) {
         if (buf == null)
             return "";
         StringBuffer result = new StringBuffer(2*buf.length);
@@ -197,16 +198,18 @@ public class DataIO {
 	}
 	
 	public static void main(String[] args){
-		String str1 = "????pY?@????	o????0";
-		try {
-			if(compareString(str1, new String(str1.getBytes("ISO-8859-1"), "ISO-8859-1"), "ISO-8859-1")){
-				System.out.println("right!");
-			}else{
-				System.err.println("error!");
-			}
-		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		System.out.println(toHexFromString("ab").length());
+		Out.printBytes(toBytesFromHex(toHexFromString("ab")));
+//		String str1 = "????pY?@????	o????0";
+//		try {
+//			if(compareString(str1, new String(str1.getBytes("ISO-8859-1"), "ISO-8859-1"), "ISO-8859-1")){
+//				System.out.println("right!");
+//			}else{
+//				System.err.println("error!");
+//			}
+//		} catch (UnsupportedEncodingException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 	}
 }
