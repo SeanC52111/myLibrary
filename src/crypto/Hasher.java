@@ -8,9 +8,7 @@ package crypto;
  * 
  * */
 
-import java.math.BigInteger;
 import java.security.MessageDigest;
-
 import IO.DataIO;
 
 
@@ -116,5 +114,22 @@ public class Hasher {
 			System.exit(-1);
 			return null;
 		}
+	}
+	
+
+	/**
+	 * hash them together with | separated
+	 * @param components String[]
+	 * @return String
+	 * */
+	public static String computeGeneralHashValue(String[] components){
+		StringBuffer str = new StringBuffer();
+		if(components != null){
+			for(int i = 0; i < components.length ; i++){
+				if(i != 0)str.append("|");
+				str.append(components[i]);
+			}
+		}
+		return hashString(str.toString());
 	}
 }
