@@ -34,6 +34,7 @@ import java.io.*;
 
 import spatialindex.*;
 import storagemanager.*;
+import timer.Timer;
 
 public class RTree implements ISpatialIndex
 {
@@ -77,6 +78,211 @@ public class RTree implements ISpatialIndex
 	ArrayList m_readNodeCommands = new ArrayList();
 	ArrayList m_deleteNodeCommands = new ArrayList();
 
+	
+	/**
+	 * create a Rtree with default page size 4096, and this a disk based Rtree.
+	 * The fill factor is 0.7.
+	 * The buffer capacity is 10, which may be adjusted to be larger.
+	 * The dimension here is 2.
+	 * If the indexes have existed, the files will not be overwritten.
+	 * 
+	 * @param args[]
+	 * 			RTreeLoad input_file tree_file capacity dimension
+	 * 
+	 * @return ISpatialIndex
+	 *  
+	 * 
+	 * */
+	public static ISpatialIndex creatRTree(String args[]) {
+		try {
+			if (args.length != 4) {
+				System.out.println("Usage: RTreeLoad input_file tree_file capacity dimension.");
+				System.exit(-1);
+			}
+
+			LineNumberReader lr = null;
+
+			try {
+				lr = new LineNumberReader(new FileReader(args[0]));
+			} catch (FileNotFoundException e) {
+				System.out.println("Cannot open data file " + args[0] + ".");
+				System.exit(-1);
+			}
+
+			// Create a disk based storage manager.
+			PropertySet ps = new PropertySet();
+
+			Boolean b = new Boolean(false);
+			ps.setProperty("Overwrite", b);
+			//overwrite the file if it exists.
+
+			ps.setProperty("FileName", args[1]);
+			// .idx and .dat extensions will be added.
+
+			Integer i = new Integer(4096);
+			ps.setProperty("PageSize", i);
+			// specify the page size. Since the index may also contain user defined data
+			// there is no way to know how big a single node may become. The storage manager
+			// will use multiple pages per node if needed. Off course this will slow down performance.
+
+			IStorageManager diskfile = new DiskStorageManager(ps);
+
+			IBuffer file = new RandomEvictionsBuffer(diskfile, 10, false);
+			// applies a main memory random buffer on top of the persistent storage manager
+			// (LRU buffer, etc can be created the same way).
+
+			// Create a new, empty, RTree with dimensionality 2, minimum load 70%, using "file" as
+			// the StorageManager and the RSTAR splitting policy.
+			PropertySet ps2 = new PropertySet();
+
+			Double f = new Double(0.7);
+			ps2.setProperty("FillFactor", f);
+
+			i = new Integer(args[2]);
+			ps2.setProperty("IndexCapacity", i);
+			ps2.setProperty("LeafCapacity", i);
+			// Index capacity and leaf capacity may be different.
+
+			int dim = new Integer(args[3]);
+			ps2.setProperty("Dimension", i);
+			
+			ISpatialIndex tree = new RTree(ps2, file);
+
+			int count = 0;
+			int id = 0, op;
+			
+			double[] f1 = new double[dim];
+			double[] f2 = new double[dim];
+
+			Timer timer = new Timer(); timer.reset();
+			
+			String line = lr.readLine();
+
+			while (line != null) {
+				StringTokenizer st = new StringTokenizer(line);
+				op = new Integer(st.nextToken()).intValue();
+				id = new Integer(st.nextToken()).intValue();
+
+				for (int d = 0; d < dim; d ++) {
+					f1[d] = Double.parseDouble(st.nextToken());
+				}
+				for (int d = 0; d < dim; d ++) {
+					f2[d] = Double.parseDouble(st.nextToken());
+				}
+				
+				if (op == 0) {
+					//delete
+					
+					Region r = new Region(f1, f2);
+
+					if (tree.deleteData(r, id) == false) {
+						System.out.println("Cannot delete id: " + id + " , count: " + count + ".");
+						System.exit(-1);
+					}
+				} else if (op == 1) {
+					//insert
+
+					Region r = new Region(f1, f2);
+
+					//String data = r.toString();
+					// associate some data with this region. I will use a string that represents the
+					// region itself, as an example.
+					// NOTE: It is not necessary to associate any data here. A null pointer can be used. In that
+					// case you should store the data externally. The index will provide the data IDs of
+					// the answers to any query, which can be used to access the actual data from the external
+					// storage (e.g. a hash table or a database table, etc.).
+					// Storing the data in the index is convinient and in case a clustered storage manager is
+					// provided (one that stores any node in consecutive pages) performance will improve substantially,
+					// since disk accesses will be mostly sequential. On the other hand, the index will need to
+					// manipulate the data, resulting in larger overhead. If you use a main memory storage manager,
+					// storing the data externally is highly recommended (clustering has no effect).
+					// A clustered storage manager is NOT provided yet.
+					// Also you will have to take care of converting you data to and from binary format, since only
+					// array of bytes can be inserted in the index (see RTree::Node::load and RTree::Node::store for
+					// an example of how to do that).
+
+					//tree.insertData(data.getBytes(), r, id);
+
+					tree.insertData(null, r, id);
+					id ++;
+					// example of passing a null pointer as the associated data.
+				} else {
+					// throw exception
+				}
+
+				if (count % 1000 == 0) {
+					System.out.print(".");
+					if(count % 50000 == 0)System.out.println(count + "");
+				}
+
+				count++;
+				line = lr.readLine();
+			}
+//			System.out.println("Total id :\t" + id);
+			timer.stop();
+
+			System.out.println("Operations: " + count);
+			System.out.println(tree.toString());
+			System.out.println("Minutes: " + timer.timeElapseinS() / 60.0f);
+
+			// since we created a new RTree, the PropertySet that was used to initialize the structure
+			// now contains the IndexIdentifier property, which can be used later to reuse the index.
+			// (Remember that multiple indices may reside in the same storage manager at the same time
+			//  and every one is accessed using its unique IndexIdentifier).
+			Integer indexID = (Integer) ps2.getProperty("IndexIdentifier");
+			System.out.println("Index ID: " + indexID);
+
+			boolean ret = tree.isIndexValid();
+			if (ret == false) {
+				System.out.println("Structure is INVALID!");
+			}
+
+			// flush all pending changes to persistent storage (needed since Java might not call finalize when JVM exits).
+			tree.flush();
+			return tree;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	/**
+	 * load a Rtree
+	 * @param treeFile
+	 * 			Index to be loaded
+	 * @return ISpatialIndex
+	 * 
+	 * 	
+	 * */
+	public static ISpatialIndex loadRTree (String treeFile) {
+		try {
+			// Create a disk based storage manager.
+			PropertySet ps = new PropertySet();
+
+			ps.setProperty("FileName", treeFile);
+				// .idx and .dat extensions will be added.
+
+			IStorageManager diskfile = new DiskStorageManager(ps);
+
+			IBuffer file = new RandomEvictionsBuffer(diskfile, 10, false);
+				// applies a main memory random buffer on top of the persistent storage manager
+				// (LRU buffer, etc can be created the same way).
+
+			PropertySet ps2 = new PropertySet();
+
+			// If we need to open an existing tree stored in the storage manager, we only
+			// have to specify the index identifier as follows
+			Integer i = new Integer(1); // INDEX_IDENTIFIER_GOES_HERE (suppose I know that in this case it is equal to 1);
+			ps2.setProperty("IndexIdentifier", i);
+				// this will try to locate and open an already existing r-tree index from file manager file.
+
+			return new RTree(ps2, file);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
 	public RTree(PropertySet ps, IStorageManager sm)
 	{
 		m_rwLock = new RWLock();
