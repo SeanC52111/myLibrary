@@ -54,15 +54,17 @@ public abstract class Buffer implements IBuffer
 		byte[] ret = null;
 		Entry e = (Entry) m_buffer.get(new Integer(id));
 
-		if (e != null)
+		if (e != null)  
 		{
+			// hit in buffer
 			m_hits++;
 
 			ret = new byte[e.m_data.length];
 			System.arraycopy(e.m_data, 0, ret, 0, e.m_data.length);
-  	}
+		}
 		else
 		{
+			// miss in buffer, thus has to load from storage
 			ret = m_storageManager.loadByteArray(id);
 			e = new Entry(ret);
 			addEntry(id, e);
@@ -75,14 +77,14 @@ public abstract class Buffer implements IBuffer
 		int ret = id;
 
 		if (id == NewPage)
-  	{
+	  	{
  			ret = m_storageManager.storeByteArray(id, data);
  			Entry e = new Entry(data);
 			addEntry(ret, e);
-  	}
-  	else
-  	{
-  		if (m_bWriteThrough)
+	  	}
+	  	else
+	  	{
+	  		if (m_bWriteThrough)
 			{
 				m_storageManager.storeByteArray(id, data);
 			}
@@ -90,6 +92,7 @@ public abstract class Buffer implements IBuffer
 			Entry e = (Entry) m_buffer.get(new Integer(id));
 			if (e != null)
 			{
+				// hit in buffer, and store into buffer
 				e.m_data = new byte[data.length];
 				System.arraycopy(data, 0, e.m_data, 0, data.length);
 
@@ -107,12 +110,16 @@ public abstract class Buffer implements IBuffer
 			{
 				e = new Entry(data);
 				if (m_bWriteThrough == false) e.m_bDirty = true;
-  			addEntry(id, e);
+				addEntry(id, e);
 			}
 		}
 
 		return ret;
 	}
+	
+	/**
+	 * delete byte array from both buffer and disk
+	 * */
 	public void deleteByteArray(final int id)
 	{
 		Integer ID = new Integer(id);
@@ -125,6 +132,9 @@ public abstract class Buffer implements IBuffer
 		m_storageManager.deleteByteArray(id);
 	}
 
+	/**
+	 * if the page is dirty, then write into disk
+	 * */
 	public void flush()
 	{
 		Iterator it = m_buffer.entrySet().iterator();
@@ -139,6 +149,11 @@ public abstract class Buffer implements IBuffer
 
 		m_storageManager.flush();
 	}
+	
+	/**
+	 * 
+	 * Clear the buffer, and if the page is dirty, it will be stored into disk
+	 * */
 	public void clear()
 	{
 		Iterator it = m_buffer.entrySet().iterator();

@@ -31,6 +31,10 @@ package storagemanager;
 
 import java.util.*;
 
+
+/**
+ * When the buffer is full, the item is randomly removed.
+ * */
 public class RandomEvictionsBuffer extends Buffer
 {
 	Random m_random = new Random();
