@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import rtree.RTree;
 import spatialindex.SpatialIndex;
 import storagemanager.DiskStorageManager;
 import storagemanager.IBuffer;
@@ -80,6 +81,10 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V> /*implements Map
 		tree.put(new Long(2), "tue");
 		tree.put(new Long(4), "thu");
 		System.out.println(tree.toString());
+		tree.flush();
+		
+		tree = BPlusTree.loadBPTree("./database/btree");
+		System.out.println(tree.toString());
 	}
 	
 	IStorageManager m_pStorageManager;
@@ -94,6 +99,45 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V> /*implements Map
 //	public BPlusTree(NodeFactory<K, V> factory) {
 //		this.factory = factory;
 //	}
+	
+	
+	/**
+	 * To load a b+tree from file.
+	 * The header is loaded from page 0.
+	 * 
+	 * @param treeFile
+	 * 		the file to be loaded
+	 * @return
+	 * 		the BPlusTree
+	 */
+	public static BPlusTree loadBPTree (String treeFile) {
+		try{
+			PropertySet ps = new PropertySet();
+			
+			ps.setProperty("FileName", treeFile);
+			// .idx and .dat extensions will be added.
+			
+			IStorageManager diskfile = new DiskStorageManager(ps);
+			
+			IBuffer file = new RandomEvictionsBuffer(diskfile, 10, false);
+			// applies a main memory random buffer on top of the persistent storage manager
+			// (LRU buffer, etc can be created the same way).
+			
+			PropertySet ps2 = new PropertySet();
+			
+			// If we need to open an existing tree stored in the storage manager, we only
+			// have to specify the index identifier as follows
+			Integer i = new Integer(0); // INDEX_IDENTIFIER_GOES_HERE (suppose I know that in this case it is equal to 1);
+			ps2.setProperty("IndexIdentifier", i);
+			// this will try to locate and open an already existing r-tree index from file manager file.
+			
+			return new BPlusTree(ps2, file);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
 	
 	public static BPlusTree createBPTree(String args[]) throws SecurityException, NullPointerException, FileNotFoundException, IllegalArgumentException, IOException {
 		// Create a disk based storage manager.
@@ -799,11 +843,10 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V> /*implements Map
 	 */
 	private void storeHeader () throws IOException {
 		ByteArrayOutputStream bs = new ByteArrayOutputStream();
-		DataOutputStream ds = new DataOutputStream(bs);
-		
-		ds.writeInt(root.getIdentifier());
+		DataOutputStream ds = new DataOutputStream(bs);		
 		ds.writeInt(factory.getOrder());
 		ds.writeInt(factory.getRecords());
+		ds.writeInt(root.getIdentifier());
 		ds.flush();
 		headerID = m_pStorageManager.storeByteArray(headerID, bs.toByteArray());
 	}
@@ -814,9 +857,9 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V> /*implements Map
 	private void loadHeader() throws IOException {
 		byte[] data = m_pStorageManager.loadByteArray(headerID);
 		DataInputStream ds = new DataInputStream(new ByteArrayInputStream(data));
-		root = this.readNode(ds.readInt());
 		factory.setOrder(ds.readInt());
 		factory.setRecords(ds.readInt());
+		root = this.readNode(ds.readInt());
 		ds.close();
 	}
 	
