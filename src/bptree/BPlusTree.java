@@ -19,9 +19,22 @@
  */
 package bptree;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import spatialindex.SpatialIndex;
+import storagemanager.DiskStorageManager;
+import storagemanager.IBuffer;
+import storagemanager.IStorageManager;
+import storagemanager.InvalidPageException;
+import storagemanager.PropertySet;
+import storagemanager.RandomEvictionsBuffer;
 import bptree.memory.MemoryNodeFactory;
 
 
@@ -31,6 +44,7 @@ import bptree.memory.MemoryNodeFactory;
  */
 public /*abstract*/ class BPlusTree<K extends Comparable<K>, V> /*implements Map<K, V>*/ {
 	
+	int headerID = -1;
 	
 	/**
 	 * @author chenqian
@@ -41,29 +55,108 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V> /*implements Map
 	 * 
 	 * */
 	public static void main(String args[]) {
-		NodeFactory<String, String> factory =
-				new MemoryNodeFactory<String, String>(5, 6);
-		BPlusTree<String, String> tree = new BPlusTree<String, String>(factory);
-		tree.put("1", "mon");
-		tree.put("2", "mon");
-		System.out.println(tree.get("2"));
-		tree.put("2", "tue");
-		System.out.println(tree.get("2"));
-		tree.put("3", "wed");
-		tree.remove("2");
-		System.out.println(tree.get("2"));
+		BPlusTree<Long, String> tree = null;
+		try {
+			tree = BPlusTree.createBPTree(new String[] {"./database/btree", "5", "6"});
+		} catch (SecurityException | NullPointerException
+				| IllegalArgumentException
+				| IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		tree.put(new Long(1), "mon");
+		System.out.println(tree.get(new Long(2)));
+		tree.put(new Long(2), "tue");
+		System.out.println(tree.get(new Long(2)));
+		tree.put(new Long(3), "wed");
+		tree.put(new Long(4), "thu");
+		tree.put(new Long(5), "fri");
+		tree.put(new Long(6), "sat");
+		tree.put(new Long(7), "sun");
+		tree.remove(new Long(2));
+		System.out.println(tree.toString());
+		tree.remove(new Long(4));
+		System.out.println(tree.toString());
+		tree.put(new Long(2), "tue");
+		tree.put(new Long(4), "thu");
+		System.out.println(tree.toString());
 	}
 	
+	IStorageManager m_pStorageManager;
 	
-	private Node<K, V> root;
-	private NodeFactory<K, V> factory;
+	private Node<K, V> root = null;
+	private NodeFactory<K, V> factory = null;
 
-	/**
-	 * @param order the order of the B+ Tree
-	 * @param records TODO
-	 */
-	public BPlusTree(NodeFactory<K, V> factory) {
-		this.factory = factory;
+//	/**
+//	 * @param order the order of the B+ Tree
+//	 * @param records TODO
+//	 */
+//	public BPlusTree(NodeFactory<K, V> factory) {
+//		this.factory = factory;
+//	}
+	
+	public static BPlusTree createBPTree(String args[]) throws SecurityException, NullPointerException, FileNotFoundException, IllegalArgumentException, IOException {
+		// Create a disk based storage manager.
+		PropertySet ps = new PropertySet();
+
+		Boolean b = new Boolean(true);
+		ps.setProperty("Overwrite", b);
+		//overwrite the file if it exists.
+
+		ps.setProperty("FileName", args[0]);
+		// .idx and .dat extensions will be added.
+
+		Integer i = new Integer(4096);
+		ps.setProperty("PageSize", i);
+		// specify the page size. Since the index may also contain user defined data
+		// there is no way to know how big a single node may become. The storage manager
+		// will use multiple pages per node if needed. Off course this will slow down performance.
+
+		IStorageManager diskfile = new DiskStorageManager(ps);
+
+		IBuffer file = new RandomEvictionsBuffer(diskfile, 10, false);
+		
+		PropertySet ps2 = new PropertySet();
+
+
+		i = new Integer(args[1]);
+		ps2.setProperty("Order", i);
+		i = new Integer(args[2]);
+		ps2.setProperty("Records", i);
+		// Index capacity and leaf capacity may be different.
+		
+		return new BPlusTree(ps2, file);
+	}
+	
+	public BPlusTree(PropertySet ps, IStorageManager sm) {
+		m_pStorageManager = sm;
+		this.factory = new MemoryNodeFactory<>();
+		Object var = ps.getProperty("IndexIdentifier");
+		if (var != null) {
+			if (! (var instanceof Integer)) throw new IllegalArgumentException("Property IndexIdentifier must an Integer");
+			headerID = ((Integer) var).intValue();
+			try {
+				loadHeader();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				throw new IllegalStateException("loadHeader failed with IOException");
+			}
+		} else {
+			headerID = m_pStorageManager.storeByteArray(headerID, new byte[1]);
+			int order = (int) ps.getProperty("Order");
+			int records = (int) ps.getProperty("Records");
+			this.factory = new MemoryNodeFactory<>(order, records);
+			root = factory.getLeafNode(this, -1);
+			this.writeNode(root);
+			try {
+				storeHeader();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				throw new IllegalStateException("storeHeader failed with IOException");
+			}
+		}
 	}
 	
 	private LeafNode<K, V> findLeafNode(K key) {
@@ -87,8 +180,7 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V> /*implements Map
 				index = -index - 1;
 			}
 			
-			
-			node = ((InnerNode<K, V>) node).getChild(index);
+			node = this.readNode(node.getChildId(index));
 			breadcrumbAdd(breadcrumbList, node, index);
 
 		}
@@ -157,7 +249,8 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V> /*implements Map
 	
 	public void put(K key, V value) {
 		if (root == null) {
-			root = factory.getLeafNode();
+//			root = this.readNode(rootID);
+			throw new IllegalStateException("The root is null.");
 		}
 		
 		/*
@@ -214,7 +307,7 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V> /*implements Map
                continue upwards on the tree.
 			*/
 			while (parent != null && parent.isFull()) {
-				InnerNode<K, V> newInnerNode = parent.split(newKey, newNode);
+				InnerNode<K, V> newInnerNode = parent.split(newKey, newNode.getIdentifier());
 				newKey = parent.getKey(parent.getSlots());
 				node = parent;
 				newNode = newInnerNode;
@@ -230,12 +323,13 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V> /*implements Map
                from the leaf to the root. 
             */
 			if (parent == null) {
-				parent = factory.getInnerNode();
-				parent.setChild(node, 0);
+				parent = factory.getInnerNode(this, -1);
+				parent.setChildId(node.getIdentifier(), 0);
 				root = parent;
 			}
 			
-			parent.insert(newKey, newNode);
+			parent.insert(newKey, newNode.getIdentifier());
+//			this.writeNode(parent);
 		}
 	}
 
@@ -253,11 +347,11 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V> /*implements Map
 		Node<K, V> results[] = new Node[2];
 		
 		if (index > 0) {
-			results[0] = parent.getChild(index - 1);
+			results[0] = this.readNode(parent.getChildId(index - 1));
 		}
 		
 		if (index < parent.getSlots()) {
-			results[1] = parent.getChild(index + 1);
+			results[1] = this.readNode(parent.getChildId(index + 1));
 		}
 
 		return results;
@@ -279,6 +373,8 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V> /*implements Map
 		checkIndex(index);
 		
 		parent.setKey(node.getKey(node.getSlots() - 1), index);
+		
+		this.writeNode(parent);
 	}
 	
 	private K getParentKey(boolean left, List<Breadcrumb<K, V>> breadcrumbList,
@@ -303,6 +399,8 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V> /*implements Map
 		checkIndex(index);
 
 		parent.setKey(key, index);
+		
+		this.writeNode(parent);
 	}
 	
 	private LeafNode<K, V> getPreviousLeafNode(LeafNode<K, V> leafNode,
@@ -327,9 +425,9 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V> /*implements Map
 
 		if (parent != root || index != 0) {
 			
-			node = ((InnerNode<K, V>) node).getChild(index - 1);
+			node = this.readNode(node.getChildId(index - 1));
 			while (node instanceof InnerNode<?, ?>) {
-				node = ((InnerNode<K, V>) node).getChild(node.getSlots());				
+				node = this.readNode(node.getChildId(node.getSlots()));				
 			}
 			result = (LeafNode<K, V>) node;
 		}
@@ -337,9 +435,11 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V> /*implements Map
 		return result;
 	}
 	
-	/*
+	/**
+	 * requires checking
 	 * TODO Complex Method
 	 */
+	@SuppressWarnings("unchecked")
 	private void removeParentKey(List<Breadcrumb<K, V>> breadcrumbList,
 			int position) {
 		InnerNode<K, V> parent =
@@ -383,6 +483,8 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V> /*implements Map
 											breadcrumbList,
 											position);
 						}
+						this.writeNode(siblings[siblingIndex]);
+						this.writeNode(parent);
 					} else {
 				/*
 				         b. If both Lleft and Lright have only the minimum number of
@@ -408,9 +510,10 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V> /*implements Map
 							parent.copyToRight(siblings[siblingIndex], parent.getSlots() + 1);
 						}
 						siblings[siblingIndex].setSlots(siblings[siblingIndex].getSlots() + parent.getSlots() + 1);
+						this.writeNode(siblings[siblingIndex]);
 						removeParentKey(breadcrumbList, position - 1);
+						this.deleteNode(parent);
 					}
-	
 				}
 			} else {
 				/*
@@ -419,9 +522,9 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V> /*implements Map
 		            the tree loses a level. 
 				 */
 				if(parent.getSlots() == 0) {
-					root = parent.getChild(0);
+					this.deleteNode(root);
+					root = this.readNode(parent.getChildId(0));
 				}
-				
 			}
 		}
 	}
@@ -482,6 +585,8 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V> /*implements Map
 					} else {
 						updateLeafParentKey(leafNode, 0, breadcrumbList, position);
 					}
+					this.writeNode(siblings[siblingIndex]);
+					this.writeNode(leafNode);
 				} else {
 			/*
 			         b. If both Lleft and Lright have only the minimum number of
@@ -501,17 +606,21 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V> /*implements Map
 						leafNode.copyToRight(siblings[siblingIndex], leafNode.getSlots());
 					}
 					siblings[siblingIndex].setSlots(siblings[siblingIndex].getSlots() + leafNode.getSlots());
+					this.writeNode(siblings[siblingIndex]);
 					if(siblings[0] == null) {
 						LeafNode<K, V> previousLeafNode = 
 							getPreviousLeafNode(leafNode, breadcrumbList,
 									position);
 						if (previousLeafNode != null) {
-							previousLeafNode.setNext(leafNode.getNext());
+							previousLeafNode.setNextId(leafNode.getNextId());
+							this.writeNode(previousLeafNode);
 						}
 					} else {
-						((LeafNode<K, V>) siblings[0]).setNext(leafNode.getNext());
+						((LeafNode<K, V>) siblings[0]).setNextId(leafNode.getNextId());
+						this.writeNode(siblings[0]);
 					}
 					removeParentKey(breadcrumbList, position);
+//					this.deleteNode(leafNode);
 				}
 			/*
 			         c. If the last two children of the root merge together into
@@ -520,10 +629,11 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V> /*implements Map
 			*/
 			}
 		} else {
-			if (leafNode.getSlots() == 0) {
-				root = null;
-			}
+//			if (leafNode.getSlots() == 0) {
+//				root = null;
+//			}
 		}
+		
 	}
 
 	private boolean canGiveSlots(Node<K, V>[] siblings) {
@@ -562,10 +672,180 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V> /*implements Map
 		
 	}
 	
+	/**
+	 * @author chenqian
+	 * @return int
+	 * 			get max capacity of innder node
+	 * */
+	public int getOrder() {
+		return factory.getOrder();
+	}
+	
+	/**
+	 * @author chenqian
+	 * @return int
+	 * 			get max capacity of leaf node
+	 * */
+	public int getRecords() {
+		return factory.getRecords();
+	}
+	
 	/*
 	 * Used in unit testing only
 	 */
 	public Node<K, V> getRoot() {
 		return root;
+	}
+	
+	/**
+	 * 
+	 * @param id
+	 * 		node id to be loaded
+	 * @return
+	 * 		the node read from the disk/buffer
+	 */
+	public Node<K, V> readNode(int id) {
+		byte[] buffer;
+		DataInputStream ds = null;
+		int nodeType = -1;
+		Node n = null;
+		try {
+			buffer = m_pStorageManager.loadByteArray(id);
+			ds = new DataInputStream(new ByteArrayInputStream(buffer));
+			nodeType = ds.readInt();
+			/**
+			 * @check again
+			 * */
+			if (nodeType == SpatialIndex.PersistentIndex) n = factory.getInnerNode(this, -1);
+			else if (nodeType == SpatialIndex.PersistentLeaf) n = factory.getLeafNode(this, -1);
+			else throw 
+				new IllegalStateException("readNode failed reading the correc node type information!");
+			n.setIdentifier(id);
+			n.load(buffer);
+		} catch (InvalidPageException e) {
+			System.err.println(e);
+			throw new IllegalStateException("readNode failed with InvalidPageException");
+		}
+		catch (IOException e) {
+			System.err.println(e);
+			throw new IllegalStateException("readNode failed with IOException node id: " + id);
+		}
+		return n;
+	}
+	
+	/**
+	 * @para Node
+	 * 		write node into bytes
+	 * @return int
+	 * 		page id
+	 * */
+	public int writeNode (Node n) {
+		byte [] buffer = null;
+		try {
+			buffer = n.store();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			throw new IllegalStateException("writeNode failed with IOException");
+		}
+		int page; 
+		if (n.getIdentifier() < 0) page = IStorageManager.NewPage;
+		else page = n.getIdentifier();
+		try {
+			page = m_pStorageManager.storeByteArray(page, buffer);
+		} catch (InvalidPageException e) {
+			System.err.println(e);
+			throw new IllegalStateException("writeNode failed with InvalidPageException");
+		}
+		if (n.getIdentifier() < 0) {
+			n.setIdentifier(page);
+		}
+		return page;
+	}
+	
+	/**
+	 * 
+	 * @param n
+	 * 		Node to be delete
+	 */
+	public void deleteNode (Node n) {
+		try {
+//			System.out.println("to delete " + n.getIdentifier());
+			m_pStorageManager.deleteByteArray(n.getIdentifier());
+		} catch (InvalidPageException e) {
+			System.err.println(e);
+			throw new IllegalStateException("deleteNode failed with InvalidPageException");
+		}
+	}
+	
+	/**
+	 * 
+	 * @param identifier
+	 * 			node id to be delete
+	 */
+	public void deleteNode (int identifier) {
+		try {
+//			System.out.println("to delete " + identifier);
+			m_pStorageManager.deleteByteArray(identifier);
+		} catch (InvalidPageException e) {
+			System.err.println(e);
+			throw new IllegalStateException("deleteNode failed with InvalidPageException");
+		}
+	}
+	
+	/**
+	 * Store the header file
+	 * @throws IOException
+	 */
+	private void storeHeader () throws IOException {
+		ByteArrayOutputStream bs = new ByteArrayOutputStream();
+		DataOutputStream ds = new DataOutputStream(bs);
+		
+		ds.writeInt(root.getIdentifier());
+		ds.writeInt(factory.getOrder());
+		ds.writeInt(factory.getRecords());
+		ds.flush();
+		headerID = m_pStorageManager.storeByteArray(headerID, bs.toByteArray());
+	}
+	
+	/**
+	 * Load the header file
+	 */
+	private void loadHeader() throws IOException {
+		byte[] data = m_pStorageManager.loadByteArray(headerID);
+		DataInputStream ds = new DataInputStream(new ByteArrayInputStream(data));
+		root = this.readNode(ds.readInt());
+		factory.setOrder(ds.readInt());
+		factory.setRecords(ds.readInt());
+		ds.close();
+	}
+	
+	/**
+	 * Flush the data into the disk
+	 * Remember to call flush before close the tree
+	 */
+	public void flush() {
+		try {
+			storeHeader();
+			m_pStorageManager.flush();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			throw new IllegalStateException("flush failed with IOException");
+		}
+	}
+	
+	/**
+	 * get string of the whole tree
+	 * 
+	 * */
+	public String toString() {
+		if (root == null) {
+			throw new IllegalStateException("Root is null");
+		}
+		StringBuffer sb = new StringBuffer("=================== tree structure ==================\n");
+		sb.append(root.toString());
+		sb.append("\n=====================================================\n");
+		return sb.toString();
 	}
 }

@@ -19,7 +19,9 @@
  */
 package bptree;
 
-public interface Node<K extends Comparable<K>, V> {
+import java.io.IOException;
+
+public interface Node<K, V> {
 
 	/**
 	 * @return the key
@@ -60,6 +62,25 @@ public interface Node<K extends Comparable<K>, V> {
 	void copyToLeft(Node<K, V> node, int count);
 	
 	void copyToRight(Node<K, V> node, int count);
+	
+	boolean isLeafNode ();
+	
+	boolean isInnerNode ();
+	
+	int getChildId(int index);
+	/**
+	 * @author chenqian
+	 * */
+	
+	void load(byte[] data) throws IOException ;
+	
+	byte[] store () throws IOException ;
+	
+	int getIdentifier ();
+	
+	void setIdentifier(int m_identifier);
+
+	String toString(int i);
 	
 
 }

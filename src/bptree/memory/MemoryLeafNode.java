@@ -19,15 +19,15 @@
  */
 package bptree.memory; 
 
+
 import bptree.AbstractNode;
+import bptree.BPlusTree;
 import bptree.LeafNode;
 import bptree.Node;
 
 
 public class MemoryLeafNode<K extends Comparable<K>, V> extends AbstractNode<K, V> implements LeafNode<K, V> {
-	private V values[];
-	private Node<K, V> next;
-	/*private LeafNode<K, V> previous;*/
+		
 	
 	/**
 	 * @param keys
@@ -35,11 +35,11 @@ public class MemoryLeafNode<K extends Comparable<K>, V> extends AbstractNode<K, 
 	 * @param next
 	 */
 	@SuppressWarnings("unchecked")
-	public MemoryLeafNode(int maxSlots, Node<K, V> next) {
-		super(maxSlots);
+	public MemoryLeafNode(BPlusTree bptree, int id, int maxSlots, int n_identifier) {
+		super(bptree, id, maxSlots);
 
 		values = (V[]) new Object[maxSlots];
-		this.next = next;
+		this.n_identifier = n_identifier;
 	}
 	
 	/* (non-Javadoc)
@@ -59,15 +59,15 @@ public class MemoryLeafNode<K extends Comparable<K>, V> extends AbstractNode<K, 
 	/* (non-Javadoc)
 	 * @see cherri.bheaven.bplustree.LeafNode#getNext()
 	 */
-	public Node<K, V> getNext() {
-		return next;
+	public int getNextId() {
+		return n_identifier;
 	}
 
 	/* (non-Javadoc)
 	 * @see cherri.bheaven.bplustree.LeafNode#setNext(cherri.bheaven.bplustree.Node)
 	 */
-	public void setNext(Node<K, V> next) {
-		this.next = next;
+	public void setNextId(int n_identifier) {
+		this.n_identifier = n_identifier;
 	}
 	
 	
@@ -89,12 +89,13 @@ public class MemoryLeafNode<K extends Comparable<K>, V> extends AbstractNode<K, 
 		setValue(value, index + 1);
 		
 		setSlots(getSlots() + 1);
+		bptree.writeNode(this);
 	}
 	
 	private LeafNode<K, V> split() {
 		checkIsFull();
 		
-		return new MemoryLeafNode<K, V>(getMaxSlots(), next);
+		return new MemoryLeafNode<K, V>(bptree, -1, getMaxSlots(), -1);
 	}
 	
 	/*
@@ -125,7 +126,9 @@ public class MemoryLeafNode<K extends Comparable<K>, V> extends AbstractNode<K, 
 		if (!found) {
 			insert(key, value);
 		}
-		setNext(newLeafNode);
+		bptree.writeNode(newLeafNode);
+		setNextId(newLeafNode.getIdentifier());
+		bptree.writeNode(this);
 		return newLeafNode;
 	}
 
@@ -141,6 +144,7 @@ public class MemoryLeafNode<K extends Comparable<K>, V> extends AbstractNode<K, 
 		}
 		
 		setSlots(getSlots() - 1);
+		bptree.writeNode(this);
 	}
 	
 	/* (non-Javadoc)
@@ -228,10 +232,17 @@ public class MemoryLeafNode<K extends Comparable<K>, V> extends AbstractNode<K, 
 		
 		buffer.append('\n');
 		buffer.append(indent);
-		buffer.append(" next: ");
-		buffer.append(next == null ? "null" : next.getKey(0));
+		buffer.append(" next: id = " + n_identifier + ", key = " );
+		buffer.append(n_identifier == -1 ? "null" : bptree.readNode(n_identifier).getKey(0));
 		
 		return buffer.toString();
+	}
+
+	@Override
+	public int getChildId(int index) {
+		// TODO Auto-generated method stub
+//		return m_pIdentifier[index];
+		return -1;
 	}
 
 }

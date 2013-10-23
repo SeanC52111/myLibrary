@@ -19,24 +19,40 @@
  */
 package bptree;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
+
+import spatialindex.SpatialIndex;
+import IO.DataIO;
 
 
 /**
  *
  */
-public abstract class AbstractNode<K extends Comparable<K>, V> implements Node<K, V> /*implements Comparable<Node<K, V>>*/ {
+public abstract class AbstractNode<K, V> implements Node<K, V> /*implements Comparable<Node<K, V>>*/ {
 
-	private K keys[];
-	private int slots;
-
+	protected BPlusTree		bptree 			= null;
+	protected int 			m_identifier 	= -1;
+	protected int 			slots			= 0;
+	protected int 			m_pIdentifier[]	= null;
+	protected K 			keys[]			= null;
+	protected V 			values[]		= null;
+	protected int		 	n_identifier	= -1; // next pointer to neighbor node
+	/*private LeafNode<K, V> previous;*/
+	
 	/**
 	 * @param maxSlots
 	 */
 	@SuppressWarnings("unchecked")
-	public AbstractNode(int maxSlots) {
-		keys = (K[]) new Comparable[maxSlots];
+	public AbstractNode(BPlusTree bptree, int id, int maxSlots) {
+		this.bptree = bptree;
+		m_identifier = id;
 		slots = 0;
+		keys = (K[])new Comparable[maxSlots];
 	}
 
 	/* (non-Javadoc)
@@ -108,11 +124,12 @@ public abstract class AbstractNode<K extends Comparable<K>, V> implements Node<K
 	public String toString(int level) {
 		StringBuffer buffer = new StringBuffer();
 		StringBuffer indent = getIndent(level);
+		
 		buffer.append(indent);
 		buffer.append(getClass().getName());
-		buffer.append('@');
-		buffer.append(hashCode());
-		
+		buffer.append(" id = ");
+//		buffer.append(hashCode());
+		buffer.append(getIdentifier());
 		if (slots > 0) {
 			buffer.append('\n');
 			buffer.append(indent);
@@ -137,6 +154,101 @@ public abstract class AbstractNode<K extends Comparable<K>, V> implements Node<K
 			indent.append("  ");
 		}
 		return indent;
+	}
+	
+	
+	/**
+	 * @author chenqian
+	 * @param byte[]
+	 * 			data to be loaded
+	 * @throws IOException 
+	 * 
+	 * */
+	public void load(byte[] data) throws IOException {
+		DataInputStream ds = 
+				new DataInputStream(new ByteArrayInputStream(data));
+		ds.readInt(); // read Type, just skip 
+//		m_identifier 	= ds.readInt();
+		slots 			= ds.readInt();
+		if (this instanceof InnerNode) {
+			m_pIdentifier 	= DataIO.readIntArrays(ds);
+		}
+		keys = (K[]) new Comparable[getMaxSlots()];
+		for (int i = 0; i < slots; i ++) {
+			keys[i] = (K) new Long(ds.readLong());
+		}
+		if (this instanceof LeafNode) {
+			for (int i = 0; i < slots; i ++) {
+				values[i] = (V) DataIO.readString(ds);
+			}
+			n_identifier 	= ds.readInt();
+		}
+		ds.close();
+	}
+	
+	/**
+	 * @author chenqian
+	 * @return byte[]
+	 * 			return the bytes to store
+	 * @throws IOException 
+	 * */
+	public byte[] store() throws IOException {
+		ByteArrayOutputStream bs = new ByteArrayOutputStream();
+		DataOutputStream ds = new DataOutputStream(bs);
+		if (this instanceof InnerNode) {
+			ds.writeInt(SpatialIndex.PersistentIndex);
+		} else {
+			ds.writeInt(SpatialIndex.PersistentLeaf);
+		}
+//		ds.writeInt(m_identifier);
+		ds.writeInt(slots);
+		if (this instanceof InnerNode) {
+			DataIO.writeIntArrays(ds, m_pIdentifier);
+		}
+		for (int i = 0; i < slots; i ++) {
+			ds.writeLong((Long) keys[i]);
+		}
+		if (this instanceof LeafNode) {
+			for (int i = 0; i < slots; i ++) {
+				DataIO.writeString(ds, values[i].toString());
+			}
+			ds.writeInt(n_identifier);
+		}
+		ds.flush();
+		return bs.toByteArray();
+	}
+	
+	
+	/**
+	 * @author chenqian
+	 * @return boolean
+	 * */
+	public boolean isLeafNode() {
+		return this instanceof LeafNode;
+	}
+	
+	/**
+	 * @author chenqian 
+	 * @return boolean
+	 * 
+	 * */
+	public boolean isInnerNode() {
+		return this instanceof InnerNode;
+	}
+	
+	/**
+	 * @return Identifier
+	 * */
+	public int getIdentifier () {
+		return m_identifier;
+	}
+	
+	/**
+	 * @param int
+	 * 			set Indentifer
+	 * */
+	public void setIdentifier(int m_identifier ) {
+		this.m_identifier = m_identifier;
 	}
 	
 }

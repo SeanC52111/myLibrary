@@ -24,7 +24,15 @@ package bptree;
  */
 public interface NodeFactory<K extends Comparable<K>, V> {
 	
-	InnerNode<K, V> getInnerNode();
+	InnerNode<K, V> getInnerNode(BPlusTree bptree, int id);
 	
-	LeafNode<K, V> getLeafNode();
+	LeafNode<K, V> getLeafNode(BPlusTree bptree, int id);
+	
+	int getOrder();
+	
+	int getRecords();
+	
+	public int setOrder(int order);
+	
+	public int setRecords(int records);
 }

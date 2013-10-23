@@ -24,19 +24,24 @@ public interface InnerNode<K extends Comparable<K>, V> extends Node<K, V> {
 	/**
 	 * @return the child
 	 */
-	Node<K, V> getChild(int index);
+	int getChildId(int index);
 
 	/**
 	 * @param child the child to set
 	 */
-	void setChild(Node<K, V> child, int index);
+	void setChildId(int child, int index);
 
-	void insert(K key, Node<K, V> child);
+	void insert(K key, int child);
 
-	/*
-	 * A very complex method needs documentation. It is used in insertion.
+	
+	/** A very complex method needs documentation. It is used in insertion.
+	 * 
+	 * @param key
+	 * @param int
+	 * @return
 	 */
-	InnerNode<K, V> split(K key, Node<K, V> newNode);
+	InnerNode<K, V> split(K key, int newNode);
+	 
 
 	void remove(int index);
 

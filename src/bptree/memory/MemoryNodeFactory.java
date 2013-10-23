@@ -19,6 +19,7 @@
  */
 package bptree.memory;
 
+import bptree.BPlusTree;
 import bptree.InnerNode;
 import bptree.LeafNode;
 import bptree.NodeFactory;
@@ -28,8 +29,8 @@ import bptree.NodeFactory;
  */
 public class MemoryNodeFactory<K extends Comparable<K>, V> implements NodeFactory<K, V> {
 
-	private final int order;
-	private final int records;
+	private int order;
+	private int records;
 	
 	/**
 	 * @param order the order of the B+ Tree
@@ -40,15 +41,38 @@ public class MemoryNodeFactory<K extends Comparable<K>, V> implements NodeFactor
 		this.records = records;
 	}
 
+
+	/**
+	 * @param order the order of the B+ Tree
+	 * @param records TODO
+	 */
+	public MemoryNodeFactory() {
+	}
+		
 	@Override
-	public InnerNode<K, V> getInnerNode() {
-		return new MemoryInnerNode<K, V>(order - 1);
+	public InnerNode<K, V> getInnerNode(BPlusTree bptree, int id) {
+		return new MemoryInnerNode<K, V>(bptree, id, order - 1);
 	}
 
 	@Override
-	public LeafNode<K, V> getLeafNode() {
-		return new MemoryLeafNode<K, V>(records, null);
+	public LeafNode<K, V> getLeafNode(BPlusTree bptree, int id) {
+		return new MemoryLeafNode<K, V>(bptree, id, records, -1);
 	}
 	
+	public int getOrder() {
+		return order;
+	}
+	
+	public int getRecords() {
+		return records;
+	}
+	
+	public int setOrder(int order) {
+		return this.order = order;
+	}
+	
+	public int setRecords(int records) {
+		return this.records = records;
+	}
 
 }

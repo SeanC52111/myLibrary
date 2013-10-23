@@ -34,12 +34,12 @@ public interface LeafNode<K extends Comparable<K>, V> extends Node<K, V> {
 	/**
 	 * @return the next
 	 */
-	Node<K, V> getNext();
+	int getNextId();
 
 	/**
 	 * @param next the next to set
 	 */
-	void setNext(Node<K, V> next);
+	void setNextId(int n_identifier);
 
 	void insert(K key, V value);
 

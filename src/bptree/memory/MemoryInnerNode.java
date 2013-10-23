@@ -19,7 +19,9 @@
  */
 package bptree.memory;
 
+import sun.security.action.GetLongAction;
 import bptree.AbstractNode;
+import bptree.BPlusTree;
 import bptree.InnerNode;
 import bptree.Node;
 
@@ -27,56 +29,53 @@ import bptree.Node;
  *
  */
 public class MemoryInnerNode<K extends Comparable<K>, V> extends AbstractNode<K, V> implements InnerNode<K, V> {
-	private Node<K, V> children[];
+//	private Node<K, V> children[];
+	
 	
 	/**
 	 * @param maxSlots
 	 */
 	@SuppressWarnings("unchecked")
-	public MemoryInnerNode(int maxSlots) {
-		super(maxSlots);
+	public MemoryInnerNode(BPlusTree bptree, int id, int maxSlots) {
+		super(bptree, id, maxSlots);
 		
-		children = new AbstractNode[maxSlots + 1];
+		m_pIdentifier = new int[maxSlots + 1];
 	}
 
-	/* (non-Javadoc)
-	 * @see cherri.bheaven.bplustree.InnerNode#getChild(int)
-	 */
-	public Node<K, V> getChild(int index) {
-		return children[index];
+	
+	public int getChildId(int index) {
+		return m_pIdentifier[index];
 	}
 
-	/* (non-Javadoc)
-	 * @see cherri.bheaven.bplustree.InnerNode#setChild(cherri.bheaven.bplustree.Node, int)
-	 */
-	public void setChild(Node<K, V> child, int index) {
-		children[index] = child;
+	public void setChildId(int child, int index) {
+		m_pIdentifier[index] = child;
 	}
 	
 	/* (non-Javadoc)
 	 * @see cherri.bheaven.bplustree.InnerNode#insert(K, cherri.bheaven.bplustree.AbstractNode)
 	 */
-	public void insert(K key, Node<K, V> child) {
+	public void insert(K key, int child) {
 		
 		int index = getSlots() - 1;
 		
 		while (index >= 0 && key.compareTo(getKey(index)) < 0) {
 			setKey(getKey(index), index + 1);
-			setChild(getChild(index + 1), index + 2);
+			setChildId(getChildId(index + 1), index + 2);
 
 			index--;
 		}
 		
 		setKey(key, index + 1);
-		setChild(child, index + 2);
+		setChildId(child, index + 2);
 		
 		setSlots(getSlots() + 1);
+		bptree.writeNode(this);
 	}
 	
 	private InnerNode<K, V> split() {
 		checkIsFull();
 		
-		return new MemoryInnerNode<K, V>(getMaxSlots());
+		return new MemoryInnerNode<K, V>(bptree, getIdentifier(), getMaxSlots());
 	}
 	
 	/*
@@ -85,7 +84,7 @@ public class MemoryInnerNode<K extends Comparable<K>, V> extends AbstractNode<K,
 	/* (non-Javadoc)
 	 * @see cherri.bheaven.bplustree.InnerNode#split(K, cherri.bheaven.bplustree.AbstractNode)
 	 */
-	public InnerNode<K, V> split(K key, Node<K, V> newNode) {
+	public InnerNode<K, V> split(K key, int newNode) {
 		InnerNode<K, V> newInnerNode = split();
 		int count = getSlots() / 2;
 		int right = count - 1;
@@ -94,11 +93,11 @@ public class MemoryInnerNode<K extends Comparable<K>, V> extends AbstractNode<K,
 		for (int i = 0; i < count; i++, right--) {
 			if(found || key.compareTo(getKey(left)) < 0) {
 				newInnerNode.setKey(getKey(left), right);
-				newInnerNode.setChild(getChild(left + 1), right + 1);
+				newInnerNode.setChildId(getChildId(left + 1), right + 1);
 				left--;
 			} else {
 				newInnerNode.setKey(key, right);
-				newInnerNode.setChild(newNode, right + 1);
+				newInnerNode.setChildId(newNode, right + 1);
 				found = true;
 			}
 		}
@@ -108,7 +107,9 @@ public class MemoryInnerNode<K extends Comparable<K>, V> extends AbstractNode<K,
 			insert(key, newNode);
 		}
 		setSlots(getSlots() - 1);
-		newInnerNode.setChild(getChild(getSlots() + 1), 0);
+		newInnerNode.setChildId(getChildId(getSlots() + 1), 0);
+		bptree.writeNode(newInnerNode);
+		bptree.writeNode(this);
 		return newInnerNode;
 	}
 
@@ -116,16 +117,17 @@ public class MemoryInnerNode<K extends Comparable<K>, V> extends AbstractNode<K,
 	 * @see cherri.bheaven.bplustree.InnerNode#remove(int)
 	 */
 	public void remove(int index) {
+		bptree.deleteNode(getChildId(index));
 		
 		for (int i = index; i < getSlots(); i++) {
 			if (i < getSlots() - 1) {
 				setKey(getKey(i + 1), i);
 			}
-			setChild(getChild(i + 1), i);
+			setChildId(getChildId(i + 1), i);
 		}
 		
 		setSlots(getSlots() - 1);
-		
+		bptree.writeNode(this);
 	}
 	
 	/* (non-Javadoc)
@@ -151,10 +153,10 @@ public class MemoryInnerNode<K extends Comparable<K>, V> extends AbstractNode<K,
 	public void leftShift(int count) {
 		for (int i = 0; i < getSlots() - count; i++) {
 			setKey(getKey(i + count), i);
-			setChild(getChild(i + count), i);
+			setChildId(getChildId(i + count), i);
 		}
 		
-		setChild(getChild(getSlots()), getSlots() - count);
+		setChildId(getChildId(getSlots()), getSlots() - count);
 	}
 
 	/* (non-Javadoc)
@@ -164,10 +166,10 @@ public class MemoryInnerNode<K extends Comparable<K>, V> extends AbstractNode<K,
 	public void rightShift(int count) {
 		for (int i = getSlots() - 1; i >= 0 ; i--) {
 			setKey(getKey(i), i + count);
-			setChild(getChild(i + 1), i + count + 1);
+			setChildId(getChildId(i + 1), i + count + 1);
 		}
 		
-		setChild(getChild(0), count);
+		setChildId(getChildId(0), count);
 		
 	}
 
@@ -180,7 +182,7 @@ public class MemoryInnerNode<K extends Comparable<K>, V> extends AbstractNode<K,
 			if(i < getSlots()) {
 				node.setKey(getKey(i), node.getSlots() + i + 1);
 			}
-			((InnerNode<K, V>) node).setChild(getChild(i), node.getSlots() + i + 1);
+			((InnerNode<K, V>) node).setChildId(getChildId(i), node.getSlots() + i + 1);
 		}
 	}
 
@@ -191,9 +193,9 @@ public class MemoryInnerNode<K extends Comparable<K>, V> extends AbstractNode<K,
 	public void copyToRight(Node<K, V> node, int count) {
 		for (int i = 0; i < count - 1; i++) {
 			node.setKey(getKey(getSlots() - count + i + 1), i);
-			((InnerNode<K, V>) node).setChild(getChild(getSlots() - count + i + 2), i + 1);
+			((InnerNode<K, V>) node).setChildId(getChildId(getSlots() - count + i + 2), i + 1);
 		}
-		((InnerNode<K, V>) node).setChild(getChild(getSlots() - count + 1), 0);
+		((InnerNode<K, V>) node).setChildId(getChildId(getSlots() - count + 1), 0);
 
 	}
 
@@ -215,7 +217,7 @@ public class MemoryInnerNode<K extends Comparable<K>, V> extends AbstractNode<K,
 			if(i > 0) {
 				buffer.append('\n');
 			}
-			buffer.append(((AbstractNode<K, V>) children[i]).toString(level + 1));
+			buffer.append((bptree.readNode(getChildId(i))).toString(level + 1));
 		}
 
 		return buffer.toString();
