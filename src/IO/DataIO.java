@@ -84,10 +84,12 @@ public class DataIO {
 	}
 	
 	public static void writeBigInteger(DataOutputStream dos, BigInteger b){
-		byte[] data = b.toByteArray();
 		try {
-			dos.writeInt(data.length);
-			dos.write(data);
+			if (b == null) {
+				dos.writeInt(0);
+				return;
+			}
+			writeBytes(dos, b.toByteArray());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -112,9 +114,9 @@ public class DataIO {
 		try {
 			if(str == null || str.length() == 0){
 				dos.writeInt(0);
+				return;
 			}
-			dos.writeInt(str.length());
-			dos.write(str.getBytes(charset));
+			writeBytes(dos, str.getBytes(charset));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -128,8 +130,7 @@ public class DataIO {
 				dos.writeInt(0);
 				return;
 			}
-			dos.writeInt(str.length());
-			dos.write(str.getBytes(defaultCharSet));
+			writeBytes(dos, str.getBytes(defaultCharSet));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -141,10 +142,7 @@ public class DataIO {
 		int len;
 		byte[] data;
 		try {
-			len = dis.readInt();
-			if(len == 0)return null;
-			data = new byte[len];
-			dis.read(data);
+			data = readBytes(dis);
 			return new String(data, defaultCharSet);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -195,6 +193,32 @@ public class DataIO {
 			if(data1[i] != data2[i])return false;
 		}
 		return true;
+	}
+	
+	public static void writeBytes(DataOutputStream dos, byte[] data) {
+		try {
+			if (data == null) {
+				dos.writeInt(0);
+				return;
+			}
+			dos.writeInt(data.length);
+			dos.write(data);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public static byte[] readBytes(DataInputStream dis) {
+		byte[] data = null;
+		try {
+			data = new byte[dis.readInt()];
+			dis.read(data);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return data;
 	}
 	
 	public static void main(String[] args){
