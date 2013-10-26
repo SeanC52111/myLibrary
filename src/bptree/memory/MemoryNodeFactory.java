@@ -19,6 +19,7 @@
  */
 package bptree.memory;
 
+import IO.RW;
 import bptree.BPlusTree;
 import bptree.InnerNode;
 import bptree.LeafNode;
@@ -27,7 +28,7 @@ import bptree.NodeFactory;
 /**
  *
  */
-public class MemoryNodeFactory<K extends Comparable<K>, V> implements NodeFactory<K, V> {
+public class MemoryNodeFactory<K extends Comparable<K>, V extends RW> implements NodeFactory<K, V> {
 
 	private int order;
 	private int records;

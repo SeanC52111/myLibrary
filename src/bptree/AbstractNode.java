@@ -27,13 +27,15 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import spatialindex.SpatialIndex;
+import IO.Data;
 import IO.DataIO;
+import IO.RW;
 
 
 /**
  *
  */
-public abstract class AbstractNode<K, V> implements Node<K, V> /*implements Comparable<Node<K, V>>*/ {
+public abstract class AbstractNode<K, V extends RW> implements Node<K, V> /*implements Comparable<Node<K, V>>*/ {
 
 	protected BPlusTree		bptree 			= null;
 	protected int 			m_identifier 	= -1;
@@ -42,6 +44,7 @@ public abstract class AbstractNode<K, V> implements Node<K, V> /*implements Comp
 	protected K 			keys[]			= null;
 	protected V 			values[]		= null;
 	protected int		 	n_identifier	= -1; // next pointer to neighbor node
+	
 	/*private LeafNode<K, V> previous;*/
 	
 	/**
@@ -179,7 +182,18 @@ public abstract class AbstractNode<K, V> implements Node<K, V> /*implements Comp
 		}
 		if (this instanceof LeafNode) {
 			for (int i = 0; i < slots; i ++) {
-				values[i] = (V) DataIO.readString(ds);
+//				values[i] = (V) DataIO.readString(ds);
+//				values[i] = (V) new Data();
+				try {
+					values[i] = (V) bptree.classV.newInstance();
+				} catch (InstantiationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IllegalAccessException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				((V)values[i]).read(DataIO.readBytes(ds));
 			}
 			n_identifier 	= ds.readInt();
 		}
@@ -210,7 +224,9 @@ public abstract class AbstractNode<K, V> implements Node<K, V> /*implements Comp
 		}
 		if (this instanceof LeafNode) {
 			for (int i = 0; i < slots; i ++) {
-				DataIO.writeString(ds, values[i].toString());
+//				DataIO.writeBytes(ds, (byte[])values[i]);
+				DataIO.writeBytes(ds, values[i].write());
+//				DataIO.writeString(ds, values[i].toString());
 			}
 			ds.writeInt(n_identifier);
 		}

@@ -24,11 +24,12 @@ import bptree.AbstractNode;
 import bptree.BPlusTree;
 import bptree.InnerNode;
 import bptree.Node;
+import IO.RW;
 
 /**
  *
  */
-public class MemoryInnerNode<K extends Comparable<K>, V> extends AbstractNode<K, V> implements InnerNode<K, V> {
+public class MemoryInnerNode<K extends Comparable<K>, V extends RW> extends AbstractNode<K, V> implements InnerNode<K, V> {
 //	private Node<K, V> children[];
 	
 	

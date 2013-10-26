@@ -36,6 +36,8 @@ import storagemanager.IStorageManager;
 import storagemanager.InvalidPageException;
 import storagemanager.PropertySet;
 import storagemanager.RandomEvictionsBuffer;
+import IO.Data;
+import IO.RW;
 import bptree.memory.MemoryNodeFactory;
 
 
@@ -43,9 +45,10 @@ import bptree.memory.MemoryNodeFactory;
  * @param <K>
  *
  */
-public /*abstract*/ class BPlusTree<K extends Comparable<K>, V> /*implements Map<K, V>*/ {
+public /*abstract*/ class BPlusTree<K extends Comparable<K>, V extends RW> /*implements Map<K, V>*/ {
 	
 	int headerID = -1;
+	Class<V> classV;
 	
 	/**
 	 * @author chenqian
@@ -56,34 +59,34 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V> /*implements Map
 	 * 
 	 * */
 	public static void main(String args[]) {
-		BPlusTree<Long, String> tree = null;
+		BPlusTree<Long, Data> tree = null;
 		try {
-			tree = BPlusTree.createBPTree(new String[] {"./database/btree", "5", "6"});
+			tree = BPlusTree.createBPTree(new Object[] {"./database/btree", new Integer(5), new Integer(6), Data.class});
 		} catch (SecurityException | NullPointerException
 				| IllegalArgumentException
 				| IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		tree.put(new Long(1), "mon");
+		tree.put(new Long(1), new Data("mon"));
 		System.out.println(tree.get(new Long(2)));
-		tree.put(new Long(2), "tue");
+		tree.put(new Long(2), new Data("tue"));
 		System.out.println(tree.get(new Long(2)));
-		tree.put(new Long(3), "wed");
-		tree.put(new Long(4), "thu");
-		tree.put(new Long(5), "fri");
-		tree.put(new Long(6), "sat");
-		tree.put(new Long(7), "sun");
+		tree.put(new Long(3), new Data("wed"));
+		tree.put(new Long(4), new Data("thu"));
+		tree.put(new Long(5), new Data("fri"));
+		tree.put(new Long(6), new Data("sat"));
+		tree.put(new Long(7), new Data("sun"));
 		tree.remove(new Long(2));
 		System.out.println(tree.toString());
 		tree.remove(new Long(4));
 		System.out.println(tree.toString());
-		tree.put(new Long(2), "tue");
-		tree.put(new Long(4), "thu");
+		tree.put(new Long(2), new Data("tue"));
+		tree.put(new Long(4), new Data("thu"));
 		System.out.println(tree.toString());
 		tree.flush();
 		
-		tree = BPlusTree.loadBPTree("./database/btree");
+		tree = BPlusTree.loadBPTree(new Object[] {"./database/btree", Data.class});
 		System.out.println(tree.toString());
 	}
 	
@@ -110,11 +113,11 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V> /*implements Map
 	 * @return
 	 * 		the BPlusTree
 	 */
-	public static BPlusTree loadBPTree (String treeFile) {
+	public static BPlusTree loadBPTree (Object[] args) {
 		try{
 			PropertySet ps = new PropertySet();
 			
-			ps.setProperty("FileName", treeFile);
+			ps.setProperty("FileName", args[0]);
 			// .idx and .dat extensions will be added.
 			
 			IStorageManager diskfile = new DiskStorageManager(ps);
@@ -130,6 +133,7 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V> /*implements Map
 			Integer i = new Integer(0); // INDEX_IDENTIFIER_GOES_HERE (suppose I know that in this case it is equal to 1);
 			ps2.setProperty("IndexIdentifier", i);
 			// this will try to locate and open an already existing r-tree index from file manager file.
+			ps2.setProperty("DataClass", Data.class);
 			
 			return new BPlusTree(ps2, file);
 			
@@ -139,7 +143,7 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V> /*implements Map
 		}
 	}
 	
-	public static BPlusTree createBPTree(String args[]) throws SecurityException, NullPointerException, FileNotFoundException, IllegalArgumentException, IOException {
+	public static BPlusTree createBPTree(Object args[]) throws SecurityException, NullPointerException, FileNotFoundException, IllegalArgumentException, IOException {
 		// Create a disk based storage manager.
 		PropertySet ps = new PropertySet();
 
@@ -163,22 +167,23 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V> /*implements Map
 		PropertySet ps2 = new PropertySet();
 
 
-		i = new Integer(args[1]);
+		i = (Integer)args[1];
 		ps2.setProperty("Order", i);
-		i = new Integer(args[2]);
+		i = (Integer)args[2];
 		ps2.setProperty("Records", i);
 		// Index capacity and leaf capacity may be different.
-		
+		ps2.setProperty("DataClass", args[3]);
 		return new BPlusTree(ps2, file);
 	}
 	
 	public BPlusTree(PropertySet ps, IStorageManager sm) {
 		m_pStorageManager = sm;
-		this.factory = new MemoryNodeFactory<>();
+		this.factory = new MemoryNodeFactory<K, V>();
 		Object var = ps.getProperty("IndexIdentifier");
 		if (var != null) {
 			if (! (var instanceof Integer)) throw new IllegalArgumentException("Property IndexIdentifier must an Integer");
 			headerID = ((Integer) var).intValue();
+			classV = (Class) ps.getProperty("DataClass");
 			try {
 				loadHeader();
 			} catch (IOException e) {
@@ -188,6 +193,7 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V> /*implements Map
 			}
 		} else {
 			headerID = m_pStorageManager.storeByteArray(headerID, new byte[1]);
+			classV = (Class) ps.getProperty("DataClass");
 			int order = (int) ps.getProperty("Order");
 			int records = (int) ps.getProperty("Records");
 			this.factory = new MemoryNodeFactory<>(order, records);

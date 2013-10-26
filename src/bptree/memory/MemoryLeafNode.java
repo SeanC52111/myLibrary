@@ -20,13 +20,14 @@
 package bptree.memory; 
 
 
+import IO.RW;
 import bptree.AbstractNode;
 import bptree.BPlusTree;
 import bptree.LeafNode;
 import bptree.Node;
 
 
-public class MemoryLeafNode<K extends Comparable<K>, V> extends AbstractNode<K, V> implements LeafNode<K, V> {
+public class MemoryLeafNode<K extends Comparable<K>, V extends RW> extends AbstractNode<K, V> implements LeafNode<K, V> {
 		
 	
 	/**
@@ -38,7 +39,7 @@ public class MemoryLeafNode<K extends Comparable<K>, V> extends AbstractNode<K, 
 	public MemoryLeafNode(BPlusTree bptree, int id, int maxSlots, int n_identifier) {
 		super(bptree, id, maxSlots);
 
-		values = (V[]) new Object[maxSlots];
+		values = (V[]) new RW[maxSlots];
 		this.n_identifier = n_identifier;
 	}
 	
@@ -227,7 +228,7 @@ public class MemoryLeafNode<K extends Comparable<K>, V> extends AbstractNode<K, 
 			}
 			buffer.append("  ");
 			buffer.append(indent);
-			buffer.append(values[i].toString());
+			buffer.append(((V)values[i]).toString());
 		}
 		
 		buffer.append('\n');
