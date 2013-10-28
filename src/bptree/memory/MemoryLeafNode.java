@@ -39,7 +39,6 @@ public class MemoryLeafNode<K extends Comparable<K>, V extends RW> extends Abstr
 	public MemoryLeafNode(BPlusTree bptree, int id, int maxSlots, int n_identifier) {
 		super(bptree, id, maxSlots);
 
-		values = (V[]) new RW[maxSlots];
 		this.n_identifier = n_identifier;
 	}
 	

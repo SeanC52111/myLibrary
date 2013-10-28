@@ -56,6 +56,7 @@ public abstract class AbstractNode<K, V extends RW> implements Node<K, V> /*impl
 		m_identifier = id;
 		slots = 0;
 		keys = (K[])new Comparable[maxSlots];
+		values = (V[]) new RW[maxSlots]; 
 	}
 
 	/* (non-Javadoc)
@@ -176,14 +177,12 @@ public abstract class AbstractNode<K, V extends RW> implements Node<K, V> /*impl
 		if (this instanceof InnerNode) {
 			m_pIdentifier 	= DataIO.readIntArrays(ds);
 		}
-		keys = (K[]) new Comparable[getMaxSlots()];
 		for (int i = 0; i < slots; i ++) {
 			keys[i] = (K) new Long(ds.readLong());
 		}
-		if (this instanceof LeafNode) {
-			for (int i = 0; i < slots; i ++) {
-//				values[i] = (V) DataIO.readString(ds);
-//				values[i] = (V) new Data();
+		for (int i = 0; i < slots; i ++) {
+			boolean isNull = ds.readBoolean();
+			if (isNull == false) {
 				try {
 					values[i] = (V) bptree.classV.newInstance();
 				} catch (InstantiationException e) {
@@ -195,6 +194,8 @@ public abstract class AbstractNode<K, V extends RW> implements Node<K, V> /*impl
 				}
 				((V)values[i]).read(DataIO.readBytes(ds));
 			}
+		}
+		if (this instanceof LeafNode) {
 			n_identifier 	= ds.readInt();
 		}
 		ds.close();
@@ -222,12 +223,17 @@ public abstract class AbstractNode<K, V extends RW> implements Node<K, V> /*impl
 		for (int i = 0; i < slots; i ++) {
 			ds.writeLong((Long) keys[i]);
 		}
-		if (this instanceof LeafNode) {
-			for (int i = 0; i < slots; i ++) {
+		for (int i = 0; i < slots; i ++) {
 //				DataIO.writeBytes(ds, (byte[])values[i]);
+			if (values[i] == null) {
+				ds.writeBoolean(true);
+			} else {
+				ds.writeBoolean(false);
 				DataIO.writeBytes(ds, values[i].write());
-//				DataIO.writeString(ds, values[i].toString());
 			}
+//				DataIO.writeString(ds, values[i].toString());
+		}
+		if (this instanceof LeafNode) {
 			ds.writeInt(n_identifier);
 		}
 		ds.flush();
