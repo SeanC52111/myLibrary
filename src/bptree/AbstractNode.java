@@ -229,7 +229,7 @@ public abstract class AbstractNode<K, V extends RW> implements Node<K, V> /*impl
 				ds.writeBoolean(true);
 			} else {
 				ds.writeBoolean(false);
-				DataIO.writeBytes(ds, values[i].write());
+				DataIO.writeBytes(ds, values[i].toBytes());
 			}
 //				DataIO.writeString(ds, values[i].toString());
 		}

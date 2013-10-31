@@ -3,6 +3,8 @@
  */
 package IO;
 
+import java.io.DataOutputStream;
+
 /**
  * @author chenqian
  *
@@ -23,9 +25,13 @@ public class Data extends RW {
 		this.data = new String(data);
 	}
 
-	public byte[] write() {
+	public void write(DataOutputStream ds) {
 		// TODO Auto-generated method stub
 //		System.out.println("write call me at Data");
+		
+	}
+	
+	public byte[] toBytes() {
 		return data.getBytes();
 	}
 	
