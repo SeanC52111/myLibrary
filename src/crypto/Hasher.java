@@ -74,6 +74,19 @@ public class Hasher {
 
 	/**
 	 * 
+	 * @param data
+	 * @return
+	 */
+	public static byte[] hashBytes(byte[] data) {
+		synchronized (lock) {
+			HASHER.update(data);
+			data = HASHER.digest();
+		}
+		return data;
+	}
+	
+	/**
+	 * 
 	 * @param str
 	 * 				str in plain string
 	 * @return HEX string
