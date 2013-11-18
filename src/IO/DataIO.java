@@ -11,6 +11,24 @@ public class DataIO {
 
 	public static String defaultCharSet = "ISO-8859-1";
 	
+	public static byte[] padding(byte[] data, int bytesLength) {
+		byte[] newData = null;
+		if (data.length == bytesLength) {
+			return data;
+		} else if (data.length < bytesLength) {
+			newData = new byte[bytesLength];
+			for (int i = 0; i < bytesLength; i ++) {
+				if (i < data.length) {
+					newData[bytesLength - i - 1] = data[data.length - i - 1];
+				}else{
+					newData[bytesLength - i - 1] = 0;
+				}
+			}
+		} else {
+			throw new IllegalStateException("The data length is larger than " + bytesLength + " bytes");
+		}
+		return newData;
+	}
 	
 	public static String toHexFromString(String txt) {
         return toHexFromBytes(txt.getBytes());
