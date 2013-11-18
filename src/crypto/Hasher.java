@@ -12,7 +12,12 @@ import java.security.MessageDigest;
 import IO.DataIO;
 
 
-
+/**
+ * SHA-1 160 bits
+ * MD5 	128 bits = 16 bytes
+ * @author chenqian
+ *
+ */
 public class Hasher {
 
 	private static MessageDigest HASHER = null;

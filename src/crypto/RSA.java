@@ -24,11 +24,12 @@ import IO.DataIO;
  *
  */
 public class RSA {
+	
+	private final static BigInteger TWO = new BigInteger("2");
+	public static BigInteger PRIME_P = TWO.pow(107).subtract(BigInteger.ONE);
 
 	private static String RSA_ALGORITHM =  "RSA"; 
 	private static int DEFAULT_KEYSIZE = 1024;
-	private final static BigInteger TWO = new BigInteger("2");
-	private static BigInteger PRIME_P = TWO.pow(107).subtract(BigInteger.ONE);
 	public BigInteger n, e, d;
 	private static boolean isLoad = false;
 	private static boolean DEBUG = false;
