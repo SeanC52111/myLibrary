@@ -22,7 +22,12 @@ import IO.DataIO;
  */
 public class AES {
 
-	
+	/**
+	 * AES encrypt
+	 * @param key
+	 * @param mes
+	 * @return
+	 */
 	public static byte[] encrypt(byte[] key, byte[] mes) {
 		 SecretKeySpec skeySpec = new SecretKeySpec(key, "AES");
 		 Cipher cipher;
@@ -51,7 +56,7 @@ public class AES {
 	}
 	
 	/***
-	 * 
+	 * AES encrypt, the result is a BigInterger
 	 * @param key
 	 * @param mes
 	 * @return
@@ -61,6 +66,12 @@ public class AES {
 		return new BigInteger(DataIO.toHexFromBytes(encrypted), 16);
 	}
 	
+	/**
+	 * AES decrypt.
+	 * @param key
+	 * @param encryped
+	 * @return
+	 */
 	public static byte[] decrypt(byte[] key, byte[] encryped){
 		 SecretKeySpec skeySpec = new SecretKeySpec(key, "AES");
 		 Cipher cipher;
@@ -88,10 +99,25 @@ public class AES {
 	        return (decrypted);
 	}
 	
+	/**
+	 * Decrypt the message in BigInteger.
+	 * @param key
+	 * @param encrypted
+	 * @return
+	 */
 	public static byte[] decryptBI(byte[] key, BigInteger encrypted) {
 		byte[] data = DataIO.padding(DataIO.toBytesFromHex(encrypted.toString(16)), 16);
 		return decrypt(key, data);
 	}
+	
+	/**
+	 * get sampled key
+	 * @return
+	 */
+	public static byte[] getSampleKey() {
+		return DataIO.toBytesFromHex("140b41b22a29beb4061bda66b6747e14");
+	}
+	
 	/**
 	 * 
 	 */
