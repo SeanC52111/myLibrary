@@ -897,4 +897,17 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V extends RW> /*imp
 		sb.append("\n=====================================================\n");
 		return sb.toString();
 	}
+	
+	public void queryStrategy(final IQueryStrategy qs) {
+		if (root == null) {
+			throw new NullPointerException("The root is pointed to null");
+		}
+		int[] next = new int[]{root.getIdentifier()};
+		while (true) {
+			Node n = readNode(next[0]);
+			boolean[] hasNext = new boolean[] {false};
+			qs.getNextEntry(n, next, hasNext);
+			if (hasNext[0] == false) break;
+		}
+	}
 }
