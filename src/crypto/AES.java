@@ -32,27 +32,27 @@ public class AES {
 		 SecretKeySpec skeySpec = new SecretKeySpec(key, "AES");
 		 Cipher cipher;
 		 byte[] encrypted = null;
-			try {
-				cipher = Cipher.getInstance("AES/ECB/NoPadding");
-				cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
-				encrypted = cipher.doFinal(mes);
-			} catch (NoSuchAlgorithmException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (NoSuchPaddingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IllegalBlockSizeException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (BadPaddingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (InvalidKeyException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-	        return (encrypted);
+		try {
+			cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
+			cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
+			encrypted = cipher.doFinal(mes);
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchPaddingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalBlockSizeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (BadPaddingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvalidKeyException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return (encrypted);
 	}
 	
 	/***
@@ -77,7 +77,7 @@ public class AES {
 		 Cipher cipher;
 		 byte[] decrypted = null;
 			try {
-				cipher = Cipher.getInstance("AES/ECB/NoPadding");
+				cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
 				cipher.init(Cipher.DECRYPT_MODE, skeySpec);
 				decrypted = cipher.doFinal(encryped);
 			} catch (NoSuchAlgorithmException e) {
@@ -131,7 +131,8 @@ public class AES {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		byte[] key = DataIO.toBytesFromHex("140b41b22a29beb4061bda66b6747e14");
-		byte[] mes = DataIO.padding(DataIO.toBytesFromHex("12abcd"), 16);
+//		byte[] mes = DataIO.padding(DataIO.toBytesFromHex("12abcd"), 16);
+		byte[] mes = DataIO.toBytesFromHex("12abcd");
 		System.out.println(mes.length);
 		System.out.println("message to encrypt:" + DataIO.toHexFromBytes(mes));
 		BigInteger cipherBI = AES.encryptBI(key, mes);
