@@ -11,6 +11,36 @@ public class DataIO {
 
 	public static String defaultCharSet = "ISO-8859-1";
 	
+	/**
+	 * Common prefix of two strings
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	public static String commonPrefix(String a, String b) {
+		int len = Math.min(a.length(), b.length());
+		for (int i = 0; i < len; i ++) {
+			if (a.charAt(i) != b.charAt(i)) return a.substring(0, i);
+		}
+		return a.substring(0, len);
+	}
+	
+	/**
+	 * The most naive implementation of common prefix of String arrays, from start to end (including).
+	 * Other more efficient methods may be tire, etc.
+	 * @param strs
+	 * @param start
+	 * @param end
+	 * @return
+	 */
+	public static String commonPrefix(String[] strs, int start, int end) {
+		String ans = strs[start];
+		for (int i = start + 1; i <= end; i ++) {
+			ans = commonPrefix(ans, strs[i]);
+		}
+		return ans;
+	}
+	
 	public static byte[] padding(byte[] data, int bytesLength) {
 		byte[] newData = null;
 		if (data.length == bytesLength) {
