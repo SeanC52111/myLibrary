@@ -3,6 +3,7 @@
  */
 package IO;
 
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
 /**
@@ -18,12 +19,6 @@ public class Data extends RW {
 	public Data(String data) {
 		this.data = data;
 	}
-	
-	public void read(byte[] data) {
-		// TODO Auto-generated method stub
-//		System.out.println("read call me at Data");
-		this.data = new String(data);
-	}
 
 	public void write(DataOutputStream ds) {
 		// TODO Auto-generated method stub
@@ -38,6 +33,18 @@ public class Data extends RW {
 	public String toString() {
 //		System.out.println("Call me at Data");
 		return data;
+	}
+
+	@Override
+	public void read(DataInputStream ds) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void loadBytes(byte[] data) {
+		// TODO Auto-generated method stub
+		this.data = new String(data);
 	}
 	
 }
