@@ -8,7 +8,11 @@ package crypto;
  * 
  * */
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.security.MessageDigest;
+
 import IO.DataIO;
 
 
@@ -150,4 +154,24 @@ public class Hasher {
 		}
 		return hashString(str.toString());
 	}
+	
+	public static byte[] computeGeneralHashValue(byte[][] components) {
+		ByteArrayOutputStream bs = null;
+		DataOutputStream dos = null;
+		if (components != null) {
+			bs = new ByteArrayOutputStream();
+			dos = new DataOutputStream(bs);
+			for (int i = 0; i < components.length; i ++) {
+				if (i != 0)
+					try {
+						dos.writeChar('|');
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				DataIO.writeBytes(dos, components[i]);
+			}
+		}
+		return bs.toByteArray(); 
+	} 
 }
