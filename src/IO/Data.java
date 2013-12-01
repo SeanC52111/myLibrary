@@ -10,7 +10,7 @@ import java.io.DataOutputStream;
  * @author chenqian
  *
  */
-public class Data extends RW {
+public class Data implements RW {
 
 	String data;
 	

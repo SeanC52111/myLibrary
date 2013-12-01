@@ -10,9 +10,9 @@ import java.io.DataOutputStream;
  * @author chenqian
  *
  */
-public abstract class RW extends Object{
+public abstract interface RW{
 
-	public RW() {}
+//	public RW() {}
 	public abstract void read(DataInputStream ds);
 	public abstract void write(DataOutputStream ds);
 	public abstract void loadBytes(byte[] data);
