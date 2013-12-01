@@ -67,7 +67,13 @@ public interface Node<K, V> {
 	
 	boolean isInnerNode ();
 	
-	int getChildId(int index);
+//	int getChildId(int index);
+	
+	V getValue(int index);
+
+	void setValue(V v, int index);
+	
+	V[] getValues();
 	/**
 	 * @author chenqian
 	 * */

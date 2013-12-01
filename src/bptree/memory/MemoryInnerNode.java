@@ -19,6 +19,8 @@
  */
 package bptree.memory;
 
+import java.lang.reflect.Array;
+
 import sun.security.action.GetLongAction;
 import bptree.AbstractNode;
 import bptree.BPlusTree;
@@ -41,6 +43,7 @@ public class MemoryInnerNode<K extends Comparable<K>, V extends RW> extends Abst
 		super(bptree, id, maxSlots);
 		
 		m_pIdentifier = new int[maxSlots + 1];
+		values = (V[]) Array.newInstance(bptree.classInnerData, maxSlots + 1);
 	}
 
 	
@@ -76,7 +79,7 @@ public class MemoryInnerNode<K extends Comparable<K>, V extends RW> extends Abst
 	private InnerNode<K, V> split() {
 		checkIsFull();
 		
-		return new MemoryInnerNode<K, V>(bptree, getIdentifier(), getMaxSlots());
+		return new MemoryInnerNode<K, V>(bptree, -1, getMaxSlots());
 	}
 	
 	/*
@@ -218,6 +221,10 @@ public class MemoryInnerNode<K extends Comparable<K>, V extends RW> extends Abst
 			if(i > 0) {
 				buffer.append('\n');
 			}
+			buffer.append(indent);
+			if (values[i] == null) buffer.append("null");
+			else buffer.append(values[i].toString());
+			buffer.append('\n');
 			buffer.append((bptree.readNode(getChildId(i))).toString(level + 1));
 		}
 

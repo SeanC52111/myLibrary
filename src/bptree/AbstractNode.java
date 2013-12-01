@@ -24,6 +24,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.Arrays;
 
 import spatialindex.SpatialIndex;
@@ -55,8 +56,8 @@ public abstract class AbstractNode<K, V extends RW> implements Node<K, V> /*impl
 		this.bptree = bptree;
 		m_identifier = id;
 		slots = 0;
-		keys = (K[])new Comparable[maxSlots];
-		values = (V[]) new RW[maxSlots]; 
+		keys = (K[]) new Comparable[maxSlots];
+//		values = (V[]) new RW[maxSlots]; 
 	}
 
 	/* (non-Javadoc)
@@ -180,11 +181,12 @@ public abstract class AbstractNode<K, V extends RW> implements Node<K, V> /*impl
 		for (int i = 0; i < slots; i ++) {
 			keys[i] = (K) new Long(ds.readLong());
 		}
-		for (int i = 0; i < slots; i ++) {
+		for (int i = 0; i < slots + (this.isInnerNode() ? 1 : 0); i ++) {
 			boolean isNull = ds.readBoolean();
 			if (isNull == false) {
 				try {
-					values[i] = (V) bptree.classV.newInstance();
+					if(this.isLeafNode()) values[i] = (V) bptree.classLeafData.newInstance(); 
+					else values[i] = (V) bptree.classInnerData.newInstance();
 				} catch (InstantiationException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -192,7 +194,7 @@ public abstract class AbstractNode<K, V extends RW> implements Node<K, V> /*impl
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				((V)values[i]).read(DataIO.readBytes(ds));
+				((V)values[i]).read(ds);
 			}
 		}
 		if (this instanceof LeafNode) {
@@ -223,13 +225,13 @@ public abstract class AbstractNode<K, V extends RW> implements Node<K, V> /*impl
 		for (int i = 0; i < slots; i ++) {
 			ds.writeLong((Long) keys[i]);
 		}
-		for (int i = 0; i < slots; i ++) {
+		for (int i = 0; i < slots + (this.isInnerNode() ? 1 : 0); i ++) {
 //				DataIO.writeBytes(ds, (byte[])values[i]);
 			if (values[i] == null) {
 				ds.writeBoolean(true);
 			} else {
 				ds.writeBoolean(false);
-				DataIO.writeBytes(ds, values[i].toBytes());
+				((V)values[i]).write(ds);
 			}
 //				DataIO.writeString(ds, values[i].toString());
 		}
@@ -273,4 +275,20 @@ public abstract class AbstractNode<K, V extends RW> implements Node<K, V> /*impl
 		this.m_identifier = m_identifier;
 	}
 	
+	@Override
+	public V getValue(int index) {
+		// TODO Auto-generated method stub
+		return values[index];
+	}
+
+
+	@Override
+	public void setValue(V v, int index) {
+		// TODO Auto-generated method stub
+		values[index] = v;
+	}
+	
+	public V[] getValues() {
+		return values;
+	}
 }

@@ -20,6 +20,8 @@
 package bptree.memory; 
 
 
+import java.lang.reflect.Array;
+
 import IO.RW;
 import bptree.AbstractNode;
 import bptree.BPlusTree;
@@ -40,21 +42,9 @@ public class MemoryLeafNode<K extends Comparable<K>, V extends RW> extends Abstr
 		super(bptree, id, maxSlots);
 
 		this.n_identifier = n_identifier;
+		values = (V[]) Array.newInstance(bptree.classLeafData, maxSlots);
 	}
 	
-	/* (non-Javadoc)
-	 * @see cherri.bheaven.bplustree.LeafNode#getValue(int)
-	 */
-	public V getValue(int index) {
-		return values[index];
-	}
-	
-	/* (non-Javadoc)
-	 * @see cherri.bheaven.bplustree.LeafNode#setValue(V, int)
-	 */
-	public void setValue(V value, int index) {
-		values[index] = value;
-	}
 
 	/* (non-Javadoc)
 	 * @see cherri.bheaven.bplustree.LeafNode#getNext()
@@ -238,11 +228,11 @@ public class MemoryLeafNode<K extends Comparable<K>, V extends RW> extends Abstr
 		return buffer.toString();
 	}
 
-	@Override
-	public int getChildId(int index) {
-		// TODO Auto-generated method stub
-//		return m_pIdentifier[index];
-		return -1;
-	}
+//	@Override
+//	public int getChildId(int index) {
+//		// TODO Auto-generated method stub
+////		return m_pIdentifier[index];
+//		return -1;
+//	}
 
 }

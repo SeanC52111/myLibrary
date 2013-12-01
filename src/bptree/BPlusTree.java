@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import rtree.RTree;
 import spatialindex.SpatialIndex;
 import storagemanager.DiskStorageManager;
 import storagemanager.IBuffer;
@@ -48,7 +47,8 @@ import bptree.memory.MemoryNodeFactory;
 public /*abstract*/ class BPlusTree<K extends Comparable<K>, V extends RW> /*implements Map<K, V>*/ {
 	
 	int headerID = -1;
-	Class<V> classV;
+	public Class classLeafData;
+	public Class classInnerData;
 	
 	/**
 	 * @author chenqian
@@ -87,12 +87,13 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V extends RW> /*imp
 		tree.flush();
 		
 		tree = BPlusTree.loadBPTree(new Object[] {"./database/btree", Data.class});
+		System.out.println("load from file");
 		System.out.println(tree.toString());
 	}
 	
 	IStorageManager m_pStorageManager;
 	
-	private Node<K, V> root = null;
+	protected Node<K, V> root = null;
 	private NodeFactory<K, V> factory = null;
 
 //	/**
@@ -133,7 +134,8 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V extends RW> /*imp
 			Integer i = new Integer(0); // INDEX_IDENTIFIER_GOES_HERE (suppose I know that in this case it is equal to 1);
 			ps2.setProperty("IndexIdentifier", i);
 			// this will try to locate and open an already existing r-tree index from file manager file.
-			ps2.setProperty("DataClass", Data.class);
+			ps2.setProperty("LeafDataClass", args[1]);
+			if(args.length >= 3) ps2.setProperty("InnerDataClass", args[2]);
 			
 			return new BPlusTree(ps2, file);
 			
@@ -143,6 +145,16 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V extends RW> /*imp
 		}
 	}
 	
+	/**
+	 * 
+	 * @param args
+	 * @return
+	 * @throws SecurityException
+	 * @throws NullPointerException
+	 * @throws FileNotFoundException
+	 * @throws IllegalArgumentException
+	 * @throws IOException
+	 */
 	public static BPlusTree createBPTree(Object args[]) throws SecurityException, NullPointerException, FileNotFoundException, IllegalArgumentException, IOException {
 		// Create a disk based storage manager.
 		PropertySet ps = new PropertySet();
@@ -172,7 +184,8 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V extends RW> /*imp
 		i = (Integer)args[2];
 		ps2.setProperty("Records", i);
 		// Index capacity and leaf capacity may be different.
-		ps2.setProperty("DataClass", args[3]);
+		ps2.setProperty("LeafDataClass", args[3]);
+		if(args.length >= 5) ps2.setProperty("InnerDataClass", args[4]);
 		return new BPlusTree(ps2, file);
 	}
 	
@@ -183,7 +196,8 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V extends RW> /*imp
 		if (var != null) {
 			if (! (var instanceof Integer)) throw new IllegalArgumentException("Property IndexIdentifier must an Integer");
 			headerID = ((Integer) var).intValue();
-			classV = (Class) ps.getProperty("DataClass");
+			classLeafData = (Class) ps.getProperty("LeafDataClass");
+			classInnerData = (Class) ps.getProperty("InnerDataClass");
 			try {
 				loadHeader();
 			} catch (IOException e) {
@@ -193,7 +207,8 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V extends RW> /*imp
 			}
 		} else {
 			headerID = m_pStorageManager.storeByteArray(headerID, new byte[1]);
-			classV = (Class) ps.getProperty("DataClass");
+			classLeafData = (Class) ps.getProperty("LeafDataClass");
+			classInnerData = (Class) ps.getProperty("InnerDataClass");
 			int order = (int) ps.getProperty("Order");
 			int records = (int) ps.getProperty("Records");
 			this.factory = new MemoryNodeFactory<>(order, records);
@@ -230,7 +245,7 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V extends RW> /*imp
 				index = -index - 1;
 			}
 			
-			node = this.readNode(node.getChildId(index));
+			node = this.readNode(((InnerNode)node).getChildId(index));
 			breadcrumbAdd(breadcrumbList, node, index);
 
 		}
@@ -474,10 +489,9 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V extends RW> /*imp
 		} while (parent != root && index == 0);
 
 		if (parent != root || index != 0) {
-			
-			node = this.readNode(node.getChildId(index - 1));
+			node = this.readNode(((InnerNode)node).getChildId(index - 1));
 			while (node instanceof InnerNode<?, ?>) {
-				node = this.readNode(node.getChildId(node.getSlots()));				
+				node = this.readNode(((InnerNode)node).getChildId(node.getSlots()));				
 			}
 			result = (LeafNode<K, V>) node;
 		}
