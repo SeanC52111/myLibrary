@@ -49,7 +49,24 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V extends RW> /*imp
 	int headerID = -1;
 	public Class classLeafData;
 	public Class classInnerData;
+	IStorageManager m_pStorageManager;
+	protected Node<K, V> root = null;
+	private NodeFactory<K, V> factory = null;
 	
+	public BPlusTree() {}
+	
+	public BPlusTree(BPlusTree<K, V> tree) {
+		this.copy(tree);
+	}
+	
+	public void copy(BPlusTree<K, V> tree) {
+		this.headerID = tree.headerID;
+		this.classLeafData = tree.classLeafData;
+		this.classInnerData = tree.classInnerData;
+		this.m_pStorageManager = tree.m_pStorageManager;
+		this.root = tree.root;
+		this.factory = tree.factory;
+	}
 	/**
 	 * @author chenqian
 	 * for testing
@@ -61,7 +78,7 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V extends RW> /*imp
 	public static void main(String args[]) {
 		BPlusTree<Long, Data> tree = null;
 		try {
-			tree = BPlusTree.createBPTree(new Object[] {"./database/btree", new Integer(5), new Integer(6), Data.class});
+			tree = BPlusTree.createBPTree(new Object[] {"./database/btree", new Integer(5), new Integer(6), Data.class, Data.class});
 		} catch (SecurityException | NullPointerException
 				| IllegalArgumentException
 				| IOException e) {
@@ -86,15 +103,12 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V extends RW> /*imp
 		System.out.println(tree.toString());
 		tree.flush();
 		
-		tree = BPlusTree.loadBPTree(new Object[] {"./database/btree", Data.class});
+		tree = BPlusTree.loadBPTree(new Object[] {"./database/btree", Data.class, Data.class});
 		System.out.println("load from file");
 		System.out.println(tree.toString());
 	}
 	
-	IStorageManager m_pStorageManager;
 	
-	protected Node<K, V> root = null;
-	private NodeFactory<K, V> factory = null;
 
 //	/**
 //	 * @param order the order of the B+ Tree
