@@ -12,6 +12,8 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
 
+import javax.naming.directory.SearchControls;
+
 import timer.Timer;
 import IO.DataIO;
 import IO.RW;
@@ -23,7 +25,7 @@ import IO.RW;
  */
 public class Gfunction implements RW{
 	
-	public long L = -((long)1 << 31), U = (long)1 << 31 - 1;
+	public static long L = -((long)1 << 31), U = (long)1 << 31 - 1;
 	public String r = "something";
 	public String[] MHTree = null;
 	public String[][] GvalueU, GvalueL;
@@ -212,60 +214,44 @@ public class Gfunction implements RW{
 	 * @param can int[], composition of current value 
 	 * @return String[] for verification part
 	 * */
-	public String[] generateVerifyPart(boolean isL, int cur, int[] can){
+	public byte[] generateVerifyPart(boolean isL, int cur, int[] can){
 		ArrayList<String> str = new ArrayList<String>();
 		buildVO(1, 1, m + 1, cur + 1, str);
-		String[] ServerReturned	= new String[2 + 1 + m + 1 + str.size()];
-		if(isL){
-			ServerReturned[0] = new Integer(m + 1).toString();
-			ServerReturned[1] = new Integer(-1).toString();
-			for(int i = 0; i < m + 1; i++){
-				ServerReturned[2 + i] = hashXmore1times(r, valueL[cur][i] - can[i]);
-			}
-			ServerReturned[2 + 1 + m] = GvalueUs[cur];
-		}else{
-			ServerReturned[0] = new Integer(-1).toString();
-			ServerReturned[1] = new Integer(m + 1).toString();
-			ServerReturned[2] = GvalueLs[cur];
-			for(int i = 0; i < m + 1; i++){
-				ServerReturned[2 + 1 + i] = hashXmore1times(r, valueU[cur][i] - can[i]);
-			}
-		}
-		for(int i = 0; i < str.size(); i++){
-			ServerReturned[2 + 1 + m + 1 + i] = str.get(i);
-		}
-		return ServerReturned;
-	}
-	
-	public byte[] convertStringA2Bytes(String[] strs){
+//		String[] ServerReturned	= new String[2 + 1 + m + 1 + str.size()];
+//		ArrayList<String> serverReturned = new ArrayList<String>();
 		ByteArrayOutputStream bs = new ByteArrayOutputStream();
 		DataOutputStream ds = new DataOutputStream(bs);
-		try {
-			ds.writeInt(strs.length);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		DataIO.writeString(ds, getDigest());
+		DataIO.writeInt(ds, base);
+		if(isL){
+//			ServerReturned[0] = new Integer(m + 1).toString();
+			DataIO.writeInt(ds, m + 1);
+//			ServerReturned[1] = new Integer(-1).toString();
+			DataIO.writeInt(ds, -1);
+			for(int i = 0; i < m + 1; i++){
+//				ServerReturned[2 + i] = hashXmore1times(r, valueL[cur][i] - can[i]);
+				DataIO.writeString(ds, hashXmore1times(r, valueL[cur][i] - can[i]));
+			}
+//			ServerReturned[2 + 1 + m] = GvalueUs[cur];
+			DataIO.writeString(ds, GvalueUs[cur]);
+		}else{
+//			ServerReturned[0] = new Integer(-1).toString();
+			DataIO.writeInt(ds, -1);
+//			ServerReturned[1] = new Integer(m + 1).toString();
+			DataIO.writeInt(ds, m + 1);
+//			ServerReturned[2] = GvalueLs[cur];
+			DataIO.writeString(ds, GvalueLs[cur]);
+			for(int i = 0; i < m + 1; i++){
+//				ServerReturned[2 + 1 + i] = hashXmore1times(r, valueU[cur][i] - can[i]);
+				DataIO.writeString(ds, hashXmore1times(r, valueU[cur][i] - can[i]));
+			}
 		}
-		for (int i = 0; i < strs.length; i ++) {
-			DataIO.writeString(ds, strs[i]);
+		DataIO.writeInt(ds, str.size());
+		for(int i = 0; i < str.size(); i++){
+//			ServerReturned[2 + 1 + m + 1 + i] = str.get(i);
+			DataIO.writeString(ds, str.get(i));
 		}
 		return bs.toByteArray();
-	}
-	
-	public String[] convertBytes2StringA(byte[] data) {
-		DataInputStream ds = new DataInputStream(new ByteArrayInputStream(data));
-		int len = 0;
-		try {
-			len = ds.readInt();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		String[] strs = new String[len];
-		for (int i = 0; i < len; i ++) {
-			strs[i] = DataIO.readString(ds);
-		}
-		return strs;
 	}
 	
 	/**
@@ -292,7 +278,7 @@ public class Gfunction implements RW{
 				}
 			}
 			if(ok){
-				return convertStringA2Bytes(generateVerifyPart(true, m, can));
+				return generateVerifyPart(true, m, can);
 			}
 			for(int i = m - 1; i >= 0; i--){
 				ok = true;
@@ -303,7 +289,7 @@ public class Gfunction implements RW{
 					}
 				}
 				if(ok){
-					return convertStringA2Bytes(generateVerifyPart(true, i, can));
+					return generateVerifyPart(true, i, can);
 				}
 			}
 		}
@@ -319,7 +305,7 @@ public class Gfunction implements RW{
 				}
 			}
 			if(ok){
-				return convertStringA2Bytes(generateVerifyPart(false, m, can));
+				return generateVerifyPart(false, m, can);
 			}
 			for(int i = m - 1; i  >= 0; i--){
 				ok = true;
@@ -330,7 +316,7 @@ public class Gfunction implements RW{
 					}
 				}
 				if(ok){
-					return convertStringA2Bytes(generateVerifyPart(false, i, can));
+					return generateVerifyPart(false, i, can);
 				}
 			}
 		}
@@ -445,16 +431,17 @@ public class Gfunction implements RW{
 		return gf;
 	}
 	
-	public String clientComputed(byte[] data, long x){
+	public static String clientComputed(DataInputStream ds, long x){
 		long can;
 		String str;
-		String[] ServerReturned = convertBytes2StringA(data);
-		int len = ServerReturned.length;
-		int l = Integer.parseInt(ServerReturned[0]);
-		int r = Integer.parseInt(ServerReturned[1]);
+//		int len = ServerReturned.length;
+		int base = DataIO.readInt(ds);
+		int l = DataIO.readInt(ds);
+		int r = DataIO.readInt(ds);
 		if(l == -1){
-			m = r - 1;
+			int m = r - 1;
 			String[] strs = new String[m + 1];
+			String gValueL = DataIO.readString(ds);
 			if(x < 0){
 				try {
 					throw new Exception("value of x < 0!");
@@ -467,16 +454,21 @@ public class Gfunction implements RW{
 			for(int i = 0; i < m + 1; i++){
 				can = (x % base);
 				x /= base;
-				strs[i] = hashXtimes(ServerReturned[2 + i + 1], can);
+				strs[i] = hashXtimes(DataIO.readString(ds), can);
 				//System.out.println(strs[i]);
 			}
 			str = Hasher.computeGeneralHashValue(strs);
 			//System.out.println("Computed : " + str);
-			str = Hasher.computeGeneralHashValue(new String[]{ServerReturned[2], str});
-			String ans = rebuildVO(2 + 1 + m + 1, len - 1, ServerReturned, str);
+			str = Hasher.computeGeneralHashValue(new String[]{gValueL, str});
+			int len = DataIO.readInt(ds);
+			String[] serverReturned = new String[len];
+			for (int i = 0; i < len; i ++) {
+				serverReturned[i] = DataIO.readString(ds);
+			}
+			String ans = rebuildVO(0, len - 1, serverReturned, str);
 			return ans;
 		}else if(r == -1){
-			m = l - 1;
+			int m = l - 1;
 			String[] strs = new String[m + 1];
 			if(x < 0){
 				try {
@@ -489,11 +481,16 @@ public class Gfunction implements RW{
 			for(int i = 0; i < m + 1; i++){
 				can = (x % base);
 				x /= base;
-				strs[i] = hashXtimes(ServerReturned[2 + i], can);
+				strs[i] = hashXtimes(DataIO.readString(ds), can);
 			}
 			str = Hasher.computeGeneralHashValue(strs);
-			str = Hasher.computeGeneralHashValue(new String[]{str, ServerReturned[2 + 1 + m]});
-			String ans = rebuildVO(2 + 1 + m + 1, len - 1, ServerReturned, str);
+			str = Hasher.computeGeneralHashValue(new String[]{str, DataIO.readString(ds)});
+			int len = DataIO.readInt(ds);
+			String[] serverReturned = new String[len];
+			for (int i = 0; i < len; i ++) {
+				serverReturned[i] = DataIO.readString(ds);
+			}
+			String ans = rebuildVO(0, len - 1, serverReturned, str);
 			return ans;
 		}else{
 			try {
@@ -540,8 +537,10 @@ public class Gfunction implements RW{
 		}
 	}
 	
-	public boolean verify(byte[] vo, long x) {
-		return getDigest().equals(clientComputed(vo, x));
+	public static boolean verify(byte[] vo, long x) {
+		DataInputStream ds = new DataInputStream(new ByteArrayInputStream(vo));
+		String digest = DataIO.readString(ds);
+		return digest.equals(clientComputed(ds, x));
 	}
 	
 	
@@ -685,10 +684,10 @@ public class Gfunction implements RW{
 		
 		timer.reset();
 		for(int i = 0 ; i < times; i ++){
-			if(gf.verify(vo, gf.U - x) == true){
+			if(Gfunction.verify(vo, gf.U - x) == true){
 				//System.out.println("Pass verification!");
 			}else {
-				System.out.println("Fail verification!");
+				System.out.println("Fail verification U - x!");
 				break;
 			}
 		}
@@ -697,10 +696,10 @@ public class Gfunction implements RW{
 		gf = new Gfunction(val, 2);
 		vo = gf.generateVeryfyPart(x, true);
 		for(int i = 0 ; i < times; i ++){
-			if(gf.verify(vo, x - gf.L) == true){
+			if(Gfunction.verify(vo, x - gf.L) == true){
 				//System.out.println("Pass verification!");
 			}else {
-				System.out.println("Fail verification!");
+				System.out.println("Fail verification x - L!");
 				break;
 			}
 		}
