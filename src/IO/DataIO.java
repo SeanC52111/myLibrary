@@ -91,14 +91,34 @@ public class DataIO {
         sb.append(HEX.charAt((b>>4)&0x0f)).append(HEX.charAt(b&0x0f));
     }
     
-	public static int[] readIntArrays(DataInputStream dis){
+    public static int readInt(DataInputStream ds) {
+    	try {
+			return ds.readInt();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	return 0;
+    }
+    
+    public static long readLong(DataInputStream ds) {
+    	try {
+			return ds.readLong();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	return 0;
+    }
+    
+	public static int[] readIntArrays(DataInputStream ds){
 		int len;
 		int[] a = null;
 		try {
-			len = dis.readInt();
+			len = ds.readInt();
 			a = new int[len];
 			for(int i = 0; i < len; i++){
-				a[i] = dis.readInt();
+				a[i] = ds.readInt();
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -107,11 +127,29 @@ public class DataIO {
 		return a;
 	}
 	
-	public static void writeIntArrays(DataOutputStream dos, int[] a){
+	public static void writeInt(DataOutputStream ds, int a) {
 		try {
-			dos.writeInt(a.length);
+			ds.writeInt(a);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public static void writeLong(DataOutputStream ds, long a) {
+		try {
+			ds.writeLong(a);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public static void writeIntArrays(DataOutputStream ds, int[] a){
+		try {
+			ds.writeInt(a.length);
 			for(int v : a){
-				dos.writeInt(v);
+				ds.writeInt(v);
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -119,11 +157,11 @@ public class DataIO {
 		}
 	}
 	
-	public static void writeIntArrays(DataOutputStream dos, Integer[] a){
+	public static void writeIntArrays(DataOutputStream ds, Integer[] a){
 		try {
-			dos.writeInt(a.length);
+			ds.writeInt(a.length);
 			for(int v : a){
-				dos.writeInt(v);
+				ds.writeInt(v);
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -131,26 +169,26 @@ public class DataIO {
 		}
 	}
 	
-	public static void writeBigInteger(DataOutputStream dos, BigInteger b){
+	public static void writeBigInteger(DataOutputStream ds, BigInteger b){
 		try {
 			if (b == null) {
-				dos.writeInt(0);
+				ds.writeInt(0);
 				return;
 			}
-			writeBytes(dos, b.toByteArray());
+			writeBytes(ds, b.toByteArray());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
-	public static BigInteger readBigInteger(DataInputStream dis){
+	public static BigInteger readBigInteger(DataInputStream ds){
 		int len;
 		byte[] data = null;
 		try {
-			len = dis.readInt();
+			len = ds.readInt();
 			data = new byte[len];
-			dis.read(data, 0, len);
+			ds.read(data, 0, len);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -158,13 +196,13 @@ public class DataIO {
 		return new BigInteger(data);
 	}
 	
-	public static void writeString(DataOutputStream dos, String str, String charset){
+	public static void writeString(DataOutputStream ds, String str, String charset){
 		try {
 			if(str == null || str.length() == 0){
-				dos.writeInt(0);
+				ds.writeInt(0);
 				return;
 			}
-			writeBytes(dos, str.getBytes(charset));
+			writeBytes(ds, str.getBytes(charset));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -172,13 +210,13 @@ public class DataIO {
 		return;
 	}
 	
-	public static void writeString(DataOutputStream dos, String str){
+	public static void writeString(DataOutputStream ds, String str){
 		try {
 			if(str == null || str.length() == 0){
-				dos.writeInt(0);
+				ds.writeInt(0);
 				return;
 			}
-			writeBytes(dos, str.getBytes(defaultCharSet));
+			writeBytes(ds, str.getBytes(defaultCharSet));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -186,11 +224,11 @@ public class DataIO {
 		return;
 	}
 	
-	public static String readString(DataInputStream dis){
+	public static String readString(DataInputStream ds){
 		int len;
 		byte[] data;
 		try {
-			data = readBytes(dis);
+			data = readBytes(ds);
 			return new String(data, defaultCharSet);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -243,25 +281,25 @@ public class DataIO {
 		return true;
 	}
 	
-	public static void writeBytes(DataOutputStream dos, byte[] data) {
+	public static void writeBytes(DataOutputStream ds, byte[] data) {
 		try {
 			if (data == null) {
-				dos.writeInt(0);
+				ds.writeInt(0);
 				return;
 			}
-			dos.writeInt(data.length);
-			dos.write(data);
+			ds.writeInt(data.length);
+			ds.write(data);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
-	public static byte[] readBytes(DataInputStream dis) {
+	public static byte[] readBytes(DataInputStream ds) {
 		byte[] data = null;
 		try {
-			data = new byte[dis.readInt()];
-			dis.read(data);
+			data = new byte[ds.readInt()];
+			ds.read(data);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
