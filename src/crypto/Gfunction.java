@@ -669,6 +669,14 @@ public class Gfunction implements RW{
 		return generateVeryfyPart(q, false);
 	}
 	
+	public byte[] prepareValueGreaterThan(long q) {
+		return generateVeryfyPart(q, true);
+	}
+	
+	public byte[] prepareValueLessThan(long q) {
+		return generateVeryfyPart(q, false);
+	}
+	
 	/**
 	 * It seems if isL = true, x <= val can pass; if isR = true, x >= val can pass.
 	 * 
@@ -685,7 +693,7 @@ public class Gfunction implements RW{
 		byte[]  vo = null;
 		timer.reset();
 		for(int i = 0 ; i < times; i ++){
-			vo = gf.generateVeryfyPart(x, false);
+			vo = gf.prepareValueLessThan(x);
 		}
 		timer.stop();
 		System.out.println("SP consume:\t" + timer.timeElapseinMs() / times + "ms");
@@ -702,7 +710,7 @@ public class Gfunction implements RW{
 		System.out.println("Client consume:\t" + timer.timeElapseinMs() / times + "ms");
 		x = -1;
 		gf = new Gfunction(val, 2);
-		vo = gf.generateVeryfyPart(x, true);
+		vo = gf.prepareValueGreaterThan(x);
 		for(int i = 0 ; i < times; i ++){
 			if(Gfunction.verify(vo, x - gf.L) == true){
 				//System.out.println("Pass verification!");
