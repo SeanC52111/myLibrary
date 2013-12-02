@@ -661,6 +661,14 @@ public class Gfunction implements RW{
 		return bs.toByteArray();
 	}
 	
+	public byte[] prepareValueGreaterThan(int q) {
+		return generateVeryfyPart(q, true);
+	}
+	
+	public byte[] prepareValueLessThan(int q) {
+		return generateVeryfyPart(q, false);
+	}
+	
 	/**
 	 * It seems if isL = true, x <= val can pass; if isR = true, x >= val can pass.
 	 * 
