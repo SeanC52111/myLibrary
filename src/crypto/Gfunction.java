@@ -26,10 +26,10 @@ import IO.RW;
 public class Gfunction implements RW{
 	
 	public static long L = -((long)1 << 31), U = (long)1 << 31 - 1;
-	public String r = "something";
-	public String[] MHTree = null;
-	public String[][] GvalueU, GvalueL;
-	public String[] GvalueUs, GvalueLs;
+	public byte[] r = "something".getBytes();
+	public byte[][] MHTree = null;
+	public byte[][][] GvalueU, GvalueL;
+	public byte[][] GvalueUs, GvalueLs;
 	public int[][] valueU, valueL;
 	public long v;
 	public int base, m;
@@ -82,27 +82,27 @@ public class Gfunction implements RW{
 		// TODO Auto-generated constructor stub
 	}
 	
-	public static String hashXmore1times(String s, long m){
+	public static byte[] hashXmore1times(byte[] s, int m){
 		if(m < 0)return null;
-		String ans = s;
+		byte[] ans = s;
 		while(m -- >= 0){
-			ans = Hasher.hashString(ans);
+			ans = Hasher.hashBytes(ans);
 		}
 		return ans;
 	}
 	
-	public static String hashXtimes(String s, long m){
+	public static byte[] hashXtimes(byte[] s, int m){
 		if(m < 0)return null;
-		String ans = s;
+		byte[] ans = s;
 		while(m -- > 0){
-			ans = Hasher.hashString(ans);
+			ans = Hasher.hashBytes(ans);
 		}
 		return ans;
 	}
 	
 	public void generateU(){
-		GvalueUs = new String[m + 1];
-		GvalueU = new String[m + 1][m + 1];
+		GvalueUs = new byte[m + 1][];
+		GvalueU = new byte[m + 1][m + 1][];
 		valueU = new int[m + 1][m + 1];
 		if(whichSide >= 0){
 			for(int i = 0; i < m; i++){
@@ -154,8 +154,8 @@ public class Gfunction implements RW{
 	}
 	
 	public void generateL(){
-		GvalueLs = new String[m + 1];
-		GvalueL = new String[m + 1][m + 1];
+		GvalueLs = new byte[m + 1][];
+		GvalueL = new byte[m + 1][m + 1][];
 		valueL = new int[m + 1][m + 1];
 		
 		if(whichSide <= 0){
@@ -215,41 +215,30 @@ public class Gfunction implements RW{
 	 * @return String[] for verification part
 	 * */
 	public byte[] generateVerifyPart(boolean isL, int cur, int[] can){
-		ArrayList<String> str = new ArrayList<String>();
+		ArrayList<byte[]> str = new ArrayList<byte[]>();
 		buildVO(1, 1, m + 1, cur + 1, str);
-//		String[] ServerReturned	= new String[2 + 1 + m + 1 + str.size()];
-//		ArrayList<String> serverReturned = new ArrayList<String>();
 		ByteArrayOutputStream bs = new ByteArrayOutputStream();
 		DataOutputStream ds = new DataOutputStream(bs);
-		DataIO.writeString(ds, getDigest());
+		DataIO.writeBytes(ds, getDigest());
 		DataIO.writeInt(ds, base);
 		if(isL){
-//			ServerReturned[0] = new Integer(m + 1).toString();
 			DataIO.writeInt(ds, m + 1);
-//			ServerReturned[1] = new Integer(-1).toString();
 			DataIO.writeInt(ds, -1);
 			for(int i = 0; i < m + 1; i++){
-//				ServerReturned[2 + i] = hashXmore1times(r, valueL[cur][i] - can[i]);
-				DataIO.writeString(ds, hashXmore1times(r, valueL[cur][i] - can[i]));
+				DataIO.writeBytes(ds, hashXmore1times(r, valueL[cur][i] - can[i]));
 			}
-//			ServerReturned[2 + 1 + m] = GvalueUs[cur];
-			DataIO.writeString(ds, GvalueUs[cur]);
+			DataIO.writeBytes(ds, GvalueUs[cur]);
 		}else{
-//			ServerReturned[0] = new Integer(-1).toString();
 			DataIO.writeInt(ds, -1);
-//			ServerReturned[1] = new Integer(m + 1).toString();
 			DataIO.writeInt(ds, m + 1);
-//			ServerReturned[2] = GvalueLs[cur];
-			DataIO.writeString(ds, GvalueLs[cur]);
+			DataIO.writeBytes(ds, GvalueLs[cur]);
 			for(int i = 0; i < m + 1; i++){
-//				ServerReturned[2 + 1 + i] = hashXmore1times(r, valueU[cur][i] - can[i]);
-				DataIO.writeString(ds, hashXmore1times(r, valueU[cur][i] - can[i]));
+				DataIO.writeBytes(ds, hashXmore1times(r, valueU[cur][i] - can[i]));
 			}
 		}
 		DataIO.writeInt(ds, str.size());
 		for(int i = 0; i < str.size(); i++){
-//			ServerReturned[2 + 1 + m + 1 + i] = str.get(i);
-			DataIO.writeString(ds, str.get(i));
+			DataIO.writeBytes(ds, str.get(i));
 		}
 		return bs.toByteArray();
 	}
@@ -325,7 +314,7 @@ public class Gfunction implements RW{
 		//throw new Exception("G function error in server side!");
 	}
 	
-	public void buildMHTree(int nd, int l, int r, String[] str){
+	public void buildMHTree(int nd, int l, int r, byte[][] str){
 		if(l == r){
 			MHTree[nd] = str[l - 1];
 			return;
@@ -333,115 +322,61 @@ public class Gfunction implements RW{
 		int mid = (l + r) >> 1;
 		buildMHTree(nd * 2, l, mid, str);
 		buildMHTree(nd * 2 + 1, mid + 1, r, str);
-		MHTree[nd] = Hasher.hashString(MHTree[nd * 2] + "|" + MHTree[nd * 2 + 1]);
+		MHTree[nd] = Hasher.computeGeneralHashValue(new byte[][]{MHTree[nd * 2], MHTree[nd * 2 + 1]});
 	}
 	
-	public void buildVO(int nd, int l, int r, int v, ArrayList<String> str){
+	public void buildVO(int nd, int l, int r, int v, ArrayList<byte[]> str){
 		if(l == r){
 			return;
 		}
 		int mid = (l + r) >> 1;
 		if(v <= mid){
-			str.add("|");
+			str.add(new byte[]{'|'});
 			buildVO(nd * 2, l, mid, v, str);
 			str.add(MHTree[nd * 2 + 1]);
 		}else {
 			str.add(MHTree[nd * 2]);
 			buildVO(nd * 2 + 1, mid + 1, r, v, str);
-			str.add("|");
+			str.add(new byte[]{'|'});
 		}
 	}
 	
-	public static String rebuildVO(int l, int r, String[] buf, String str){
-		String ans = "";
+	public static byte[] rebuildVO(int l, int r, byte[][] buf, byte[] str){
 		//System.out.println(l + " " + r);
 		if(l > r){
 			return str;
 		}
-		if(buf[l].equals("|")){
-			ans = rebuildVO(l + 1, r - 1, buf, str) + "|" + buf[r];
-			return Hasher.hashString(ans);
+		if(buf[l][0] == '|'){
+			return Hasher.computeGeneralHashValue(new byte[][]{rebuildVO(l + 1, r - 1, buf, str), buf[r]});
 		}else{
-			ans = buf[l] + "|" + rebuildVO(l + 1, r - 1, buf, str);
-			return Hasher.hashString(ans);
+			return Hasher.computeGeneralHashValue(new byte[][]{buf[l], rebuildVO(l + 1, r - 1, buf, str)});
 		}
 	}
 	
-	public void copyStringArray(String[] dest, String[] src){
-		for(int i = 0; i < src.length; i++){
-			dest[i] = src[i];
-		}
-	}
-	
-	public String getDigest(){
+	public byte[] getDigest(){
 		if(MHTree != null){
 			return MHTree[1];
 		}
-		String[] strs = new String[m + 1];
+		byte[][] strs = new byte[m + 1][];
 		for(int i = 0; i <= m; i++){
-			String[] s = new String[2];
-			s[0] = GvalueLs[i];
-			s[1] = GvalueUs[i];
-			strs[i] = Hasher.computeGeneralHashValue(s);
+			strs[i] = Hasher.computeGeneralHashValue(new byte[][]{GvalueLs[i], GvalueUs[i]});
 		}
-		MHTree = new String[3 * (m + 1)];
+		MHTree = new byte[3 * (m + 1)][];
 		buildMHTree(1, 1, m + 1, strs);
 		return MHTree[1];
 	}
 	
-	public Gfunction getcopy(){
-		/**
-		 * 	public static long L = 0, U = 1000000;
-			public String r = "something";
-			public String[] MHTree = null;
-			public String[][] GvalueU, GvalueL;
-			public String[] GvalueUs, GvalueLs;
-			public int[][] valueU, valueL;
-			public long v;
-			public static int base, m;
-		 * */
-		Gfunction gf = new Gfunction();
-		gf.L = this.L;
-		gf.U = this.U;
-		gf.MHTree = new String[this.MHTree.length];
-		copyStringArray(gf.MHTree, this.MHTree);
-		gf.GvalueU = new String[this.GvalueU.length][this.GvalueU[0].length];
-		for(int i = 0; i < this.GvalueU.length; i++){
-			copyStringArray(gf.GvalueU[i], this.GvalueU[i]);
-		}
-		gf.GvalueL = new String[this.GvalueL.length][this.GvalueL[0].length];
-		for(int i = 0; i < this.GvalueL.length; i++){
-			copyStringArray(gf.GvalueL[i], this.GvalueL[i]);
-		}
-		gf.GvalueUs = new String[this.GvalueUs.length];
-		copyStringArray(gf.GvalueUs, this.GvalueUs);
-		gf.GvalueLs = new String[this.GvalueLs.length];
-		copyStringArray(gf.GvalueLs, this.GvalueLs);
-		gf.valueU = new int[this.valueU.length][this.valueU[0].length];
-		gf.valueL = new int[this.valueL.length][this.valueL[0].length];
-		for(int i = 0; i < this.valueU.length; i++){
-			for(int j = 0; j < this.valueU[i].length; j++){
-				gf.valueU[i][j] = this.valueU[i][j];
-				gf.valueL[i][j] = this.valueL[i][j];
-			}
-		}
-		gf.v = this.v;
-		gf.base = this.base;
-		gf.m = this.m;
-		return gf;
-	}
-	
-	public static String clientComputed(DataInputStream ds, long x){
-		long can;
-		String str;
+	public static byte[] clientComputed(DataInputStream ds, long x){
+		int can;
+		byte[] str;
 //		int len = ServerReturned.length;
 		int base = DataIO.readInt(ds);
 		int l = DataIO.readInt(ds);
 		int r = DataIO.readInt(ds);
 		if(l == -1){
 			int m = r - 1;
-			String[] strs = new String[m + 1];
-			String gValueL = DataIO.readString(ds);
+			byte[][] strs = new byte[m + 1][];
+			byte[] gValueL = DataIO.readBytes(ds);
 			if(x < 0){
 				try {
 					throw new Exception("value of x < 0!");
@@ -452,24 +387,23 @@ public class Gfunction implements RW{
 			}
 			//System.out.println("==========");
 			for(int i = 0; i < m + 1; i++){
-				can = (x % base);
+				can = (int) (x % base);
 				x /= base;
-				strs[i] = hashXtimes(DataIO.readString(ds), can);
+				strs[i] = hashXtimes(DataIO.readBytes(ds), can);
 				//System.out.println(strs[i]);
 			}
 			str = Hasher.computeGeneralHashValue(strs);
 			//System.out.println("Computed : " + str);
-			str = Hasher.computeGeneralHashValue(new String[]{gValueL, str});
+			str = Hasher.computeGeneralHashValue(new byte[][]{gValueL, str});
 			int len = DataIO.readInt(ds);
-			String[] serverReturned = new String[len];
+			byte[][] serverReturned = new byte[len][];
 			for (int i = 0; i < len; i ++) {
-				serverReturned[i] = DataIO.readString(ds);
+				serverReturned[i] = DataIO.readBytes(ds);
 			}
-			String ans = rebuildVO(0, len - 1, serverReturned, str);
-			return ans;
+			return rebuildVO(0, len - 1, serverReturned, str);
 		}else if(r == -1){
 			int m = l - 1;
-			String[] strs = new String[m + 1];
+			byte[][] strs = new byte[m + 1][];
 			if(x < 0){
 				try {
 					throw new Exception("value of x < 0!");
@@ -479,19 +413,18 @@ public class Gfunction implements RW{
 				}
 			}
 			for(int i = 0; i < m + 1; i++){
-				can = (x % base);
+				can = (int)(x % base);
 				x /= base;
-				strs[i] = hashXtimes(DataIO.readString(ds), can);
+				strs[i] = hashXtimes(DataIO.readBytes(ds), can);
 			}
 			str = Hasher.computeGeneralHashValue(strs);
-			str = Hasher.computeGeneralHashValue(new String[]{str, DataIO.readString(ds)});
+			str = Hasher.computeGeneralHashValue(new byte[][]{str, DataIO.readBytes(ds)});
 			int len = DataIO.readInt(ds);
-			String[] serverReturned = new String[len];
+			byte[][] serverReturned = new byte[len][];
 			for (int i = 0; i < len; i ++) {
-				serverReturned[i] = DataIO.readString(ds);
+				serverReturned[i] = DataIO.readBytes(ds);
 			}
-			String ans = rebuildVO(0, len - 1, serverReturned, str);
-			return ans;
+			return rebuildVO(0, len - 1, serverReturned, str);
 		}else{
 			try {
 				throw new Exception("Client verified error!");
@@ -503,69 +436,39 @@ public class Gfunction implements RW{
 		return null;
 	}
 	
-	public String clientComputed(String[] ServerReturned, long[] x) throws Exception{
-		String str;
-		int len = ServerReturned.length;
-		int l = Integer.parseInt(ServerReturned[0]);
-		int r = Integer.parseInt(ServerReturned[1]);
-		if(l == -1){
-			m = r - 1;
-			String[] strs = new String[m + 1];
-			//System.out.println("==========");
-			for(int i = 0; i < m + 1; i++){
-				strs[i] = hashXtimes(ServerReturned[2 + i + 1], x[i]);
-				//System.out.println(strs[i]);
-			}
-			str = Hasher.computeGeneralHashValue(strs);
-			//System.out.println("Computed : " + str);
-			str = Hasher.computeGeneralHashValue(new String[]{ServerReturned[2], str});
-			String ans = rebuildVO(2 + 1 + m + 1, len - 1, ServerReturned, str);
-			return ans;
-		}else if(r == -1){
-			m = l - 1;
-			String[] strs = new String[m + 1];
-			for(int i = 0; i < m + 1; i++){
-				strs[i] = hashXtimes(ServerReturned[2 + i], x[i]);
-			}
-			str = Hasher.computeGeneralHashValue(strs);
-			str = Hasher.computeGeneralHashValue(new String[]{str, ServerReturned[2 + 1 + m]});
-			String ans = rebuildVO(2 + 1 + m + 1, len - 1, ServerReturned, str);
-			return ans;
-
-		}else{
-			throw new Exception("Client verified error!");
-		}
-	}
-	
-	public static boolean verify(byte[] vo, long x) {
+	public static boolean verifyValueGreaterThan(byte[] vo, long x) {
 		DataInputStream ds = new DataInputStream(new ByteArrayInputStream(vo));
-		String digest = DataIO.readString(ds);
-		return digest.equals(clientComputed(ds, x));
+		byte[] digest = DataIO.readBytes(ds);
+		return DataIO.compareBytes(digest, clientComputed(ds, x - Gfunction.L));
 	}
 	
-	
+	public static boolean verifyValueLessThan(byte[] vo, long x) {
+		DataInputStream ds = new DataInputStream(new ByteArrayInputStream(vo));
+		byte[] digest = DataIO.readBytes(ds);
+		return DataIO.compareBytes(digest, clientComputed(ds, Gfunction.U - x));
+	}
 
 	@Override
 	public void read(DataInputStream dis) {
 		// TODO Auto-generated method stub
 		try {
-			L = dis.readLong();
-			U = dis.readLong();
+//			L = dis.readLong();
+//			U = dis.readLong();
 			v = dis.readLong();
 			base = dis.readInt();
 			m = (int)(Math.log(U - L) / Math.log(base));
 			int len = dis.readInt();
 			whichSide = dis.readInt();
-			MHTree = new String[len];
+			MHTree = new byte[len][];
 			for(int i = 0; i < len ; i++){
-				MHTree[i] = DataIO.readString(dis);
+				MHTree[i] = DataIO.readBytes(dis);
 			}
 			valueL = new int[m + 1][m + 1];
 			valueU = new int[m + 1][m + 1];
-			GvalueL = new String[m + 1][m + 1];
-			GvalueU = new String[m + 1][m + 1];
-			GvalueLs = new String[m + 1];
-			GvalueUs = new String[m + 1];
+			GvalueL = new byte[m + 1][m + 1][];
+			GvalueU = new byte[m + 1][m + 1][];
+			GvalueLs = new byte[m + 1][];
+			GvalueUs = new byte[m + 1][];
 			for(int i = 0; i <= m; i ++){
 				for(int j = 0; j <= m ; j ++){
 					valueL[i][j] = dis.readInt(); // for no using here
@@ -574,16 +477,16 @@ public class Gfunction implements RW{
 				if(dis.readBoolean()){
 					for(int j = 0; j <= m; j++){
 						//System.out.println(i + "\t" + j);
-						GvalueL[i][j] = DataIO.readString(dis);
+						GvalueL[i][j] = DataIO.readBytes(dis);
 					}
 				}
 				if(dis.readBoolean()){
 					for(int j = 0; j <= m ;j++){
-						GvalueU[i][j] = DataIO.readString(dis);
+						GvalueU[i][j] = DataIO.readBytes(dis);
 					}
 				}
-				GvalueLs[i] = DataIO.readString(dis);
-				GvalueUs[i] = DataIO.readString(dis);
+				GvalueLs[i] = DataIO.readBytes(dis);
+				GvalueUs[i] = DataIO.readBytes(dis);
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -603,15 +506,15 @@ public class Gfunction implements RW{
 			public int base, m;
 		 * */
 		try {
-			dos.writeLong(L);
-			dos.writeLong(U);
+//			dos.writeLong(L);
+//			dos.writeLong(U);
 			dos.writeLong(v);
 			dos.writeInt(base);
 			dos.writeInt(MHTree.length);
 			//System.out.println("m:\t" + m + " MHTree:\t" + MHTree.length);
 			dos.writeInt(whichSide);
 			for(int i = 0; i < MHTree.length; i++){
-				DataIO.writeString(dos, MHTree[i]);
+				DataIO.writeBytes(dos, MHTree[i]);
 			}
 			for(int i = 0 ; i <= m; i++){
 				for(int j = 0; j <= m; j++){
@@ -621,7 +524,7 @@ public class Gfunction implements RW{
 				if(GvalueL[i] != null){
 					dos.writeBoolean(true);
 					for(int j = 0; j <= m; j++){
-						DataIO.writeString(dos, GvalueL[i][j]);
+						DataIO.writeBytes(dos, GvalueL[i][j]);
 					}
 				}else{
 					dos.writeBoolean(false);
@@ -629,13 +532,14 @@ public class Gfunction implements RW{
 				if(GvalueU[i] != null){
 					dos.writeBoolean(true);
 					for(int j = 0; j <= m; j++){
-						DataIO.writeString(dos, GvalueU[i][j]);
+						DataIO.writeBytes(dos, GvalueU[i][j]);
+//						System.out.println(GvalueU[i][j].length);
 					}
 				}else{
 					dos.writeBoolean(false);
 				}
-				DataIO.writeString(dos, GvalueLs[i]);
-				DataIO.writeString(dos, GvalueUs[i]);
+				DataIO.writeBytes(dos, GvalueLs[i]);
+				DataIO.writeBytes(dos, GvalueUs[i]);
 			}
 			//dos.writeInt(m);
 		} catch (IOException e) {
@@ -661,20 +565,17 @@ public class Gfunction implements RW{
 		return bs.toByteArray();
 	}
 	
-	public byte[] prepareValueGreaterThan(int q) {
-		return generateVeryfyPart(q, true);
-	}
-	
-	public byte[] prepareValueLessThan(int q) {
-		return generateVeryfyPart(q, false);
-	}
-	
 	public byte[] prepareValueGreaterThan(long q) {
 		return generateVeryfyPart(q, true);
 	}
 	
 	public byte[] prepareValueLessThan(long q) {
 		return generateVeryfyPart(q, false);
+	}
+	
+	public static byte[] getDigest(byte[] vo) {
+		DataInputStream ds = new DataInputStream(new ByteArrayInputStream(vo));
+		return DataIO.readBytes(ds);
 	}
 	
 	/**
@@ -689,9 +590,15 @@ public class Gfunction implements RW{
 		 * */
 		long val = 0, x = 1, times = 1000;
 		Timer timer = new Timer();
-		Gfunction gf = new Gfunction(val, 2);
-		byte[]  vo = null;
 		timer.reset();
+		Gfunction gf = null;
+		for(int i = 0 ; i < times; i ++){
+			gf = new Gfunction(i, 2);
+		}
+		timer.stop();
+		System.out.println("Generator:\t" + timer.timeElapseinMs() / times + "ms");
+		byte[]  vo = null;
+		gf = new Gfunction(val, 2);
 		for(int i = 0 ; i < times; i ++){
 			vo = gf.prepareValueLessThan(x);
 		}
@@ -700,7 +607,7 @@ public class Gfunction implements RW{
 		
 		timer.reset();
 		for(int i = 0 ; i < times; i ++){
-			if(Gfunction.verify(vo, gf.U - x) == true){
+			if(Gfunction.verifyValueLessThan(vo, x) == true){
 				//System.out.println("Pass verification!");
 			}else {
 				System.out.println("Fail verification U - x!");
@@ -712,7 +619,7 @@ public class Gfunction implements RW{
 		gf = new Gfunction(val, 2);
 		vo = gf.prepareValueGreaterThan(x);
 		for(int i = 0 ; i < times; i ++){
-			if(Gfunction.verify(vo, x - gf.L) == true){
+			if(Gfunction.verifyValueGreaterThan(vo, x) == true){
 				//System.out.println("Pass verification!");
 			}else {
 				System.out.println("Fail verification x - L!");
@@ -723,14 +630,15 @@ public class Gfunction implements RW{
 		/**
 		 * test file in and file out
 		 * */
-//		DataOutputStream dos = new DataOutputStream(new FileOutputStream(new File("./tmp/gf")));
-//		gf.writeToFile(dos);
-//		dos.close();
-//		DataInputStream dis = new DataInputStream(new FileInputStream(new File("./tmp/gf")));
-//		gf.readFromFile(dis);
-//		dis.close();
-//		cputime = System.currentTimeMillis() - start;
-//		System.out.println("Pass G function " + times + " times consume cputime : " + cputime);
+		DataOutputStream dos = new DataOutputStream(new FileOutputStream(new File("./database/gf")));
+		for (int i = 0; i < 1; i ++) {
+			gf.write(dos);
+		}
+		dos.flush();
+		dos.close();
+		DataInputStream dis = new DataInputStream(new FileInputStream(new File("./database/gf")));
+		gf.read(dis);
+		dis.close();
 	}
 
 }

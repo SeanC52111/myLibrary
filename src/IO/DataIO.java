@@ -237,6 +237,14 @@ public class DataIO {
 		return null;
 	}
 	
+	public static boolean compareBytes(byte[] data1, byte[] data2) {
+		if(data1.length != data2.length)return false;
+		for(int i = 0; i < data1.length; i++){
+			if(data1[i] != data2[i])return false;
+		}
+		return true;
+	}
+	
 	public static boolean compareString(String str1, String str2, String charset){
 		byte[] data1 = null;
 		try {
@@ -252,11 +260,7 @@ public class DataIO {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		if(data1.length != data2.length)return false;
-		for(int i = 0; i < data1.length; i++){
-			if(data1[i] != data2[i])return false;
-		}
-		return true;
+		return compareBytes(data1, data2);
 	}
 	
 	public static boolean compareString(String str1, String str2){
@@ -274,11 +278,7 @@ public class DataIO {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		if(data1.length != data2.length)return false;
-		for(int i = 0; i < data1.length; i++){
-			if(data1[i] != data2[i])return false;
-		}
-		return true;
+		return compareBytes(data1, data2);
 	}
 	
 	public static void writeBytes(DataOutputStream ds, byte[] data) {

@@ -171,7 +171,9 @@ public class Hasher {
 					}
 				DataIO.writeBytes(dos, components[i]);
 			}
+			return Hasher.hashBytes(bs.toByteArray()); 
+		} else {
+			return null;
 		}
-		return bs.toByteArray(); 
 	} 
 }
