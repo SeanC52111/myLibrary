@@ -11,6 +11,14 @@ public class DataIO {
 
 	public static String defaultCharSet = "ISO-8859-1";
 	
+	public static String getIndent (int level) {
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < level; i ++) {
+			sb.append("  ");
+		}
+		return sb.toString();
+	}
+	
 	/**
 	 * Common prefix of two strings
 	 * @param a

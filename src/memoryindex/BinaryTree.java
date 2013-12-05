@@ -422,6 +422,10 @@ public class BinaryTree<K extends Comparable<K>, V extends RW> implements RW{
 		return bs.toByteArray();
 	}
 	
+	public void setClassValue(Class classValue) {
+		this.classValue = classValue;
+	}
+	
 	public Class getClassValue() {
 		return classValue;
 	}
