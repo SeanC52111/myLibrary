@@ -67,7 +67,7 @@ public class Data {
 			throw new IllegalStateException("The margins may be not initializedl.");
 		}
 		int x = (int)(((lat - sx) / (mx - sx)) * ShowData.DEFAULT_WIDTH);
-		int y = (int)(((lat - sx) / (mx - sx)) * ShowData.DEFAULT_WIDTH);
+		int y = (int)(((lng - sy) / (my - sy)) * ShowData.DEFAULT_HEIGHT);
 		return new Point(x, y);
 	}
 	

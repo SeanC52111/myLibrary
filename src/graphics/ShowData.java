@@ -47,10 +47,15 @@ public class ShowData extends JFrame{
 		// TODO Auto-generated method stub
 		
 		Data data = new Data(new double[][]{
-				{39.991376, 116.32641}, 
-				{39.991358,116.326438},
-				{39.991364,116.326458},
+				{0, 0}, 
+				{0, 1},
+				{1, 0},
+				{1, 1},
+				{0, 0},
+				{0.5, 0.5},
+				{0.8, 0.2}
 				}, Color.BLACK);
+		data.setLineType();
 		ShowData showData = new ShowData(new Data[]{data});
 		ShowData.draw(showData);
 	}
