@@ -25,7 +25,7 @@ import IO.RW;
  */
 public class Gfunction implements RW{
 	
-	public static long L = -((long)1 << 31), U = (long)1 << 31 - 1;
+	public static long L = -((long)1 << 60), U = (long)1 << 60;
 	public byte[] r = "something".getBytes();
 	public byte[][] MHTree = null;
 	public byte[][][] GvalueU, GvalueL;
@@ -346,7 +346,7 @@ public class Gfunction implements RW{
 		if(l > r){
 			return str;
 		}
-		if(buf[l][0] == '|'){
+		if(buf[l].length == 1 && buf[l][0] == '|'){
 			return Hasher.computeGeneralHashValue(new byte[][]{rebuildVO(l + 1, r - 1, buf, str), buf[r]});
 		}else{
 			return Hasher.computeGeneralHashValue(new byte[][]{buf[l], rebuildVO(l + 1, r - 1, buf, str)});
@@ -615,7 +615,9 @@ public class Gfunction implements RW{
 			}
 		}
 		System.out.println("Client consume:\t" + timer.timeElapseinMs() / times + "ms");
-		x = -1;
+		// 33476, 14519
+		val = 33476; 
+		x = 14519;
 		gf = new Gfunction(val, 2);
 		vo = gf.prepareValueGreaterThan(x);
 		for(int i = 0 ; i < times; i ++){
