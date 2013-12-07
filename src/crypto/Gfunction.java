@@ -452,8 +452,8 @@ public class Gfunction implements RW{
 	public void read(DataInputStream dis) {
 		// TODO Auto-generated method stub
 		try {
-//			L = dis.readLong();
-//			U = dis.readLong();
+			L = dis.readLong();
+			U = dis.readLong();
 			v = dis.readLong();
 			base = dis.readInt();
 			m = (int)(Math.log(U - L) / Math.log(base));
@@ -506,8 +506,8 @@ public class Gfunction implements RW{
 			public int base, m;
 		 * */
 		try {
-//			dos.writeLong(L);
-//			dos.writeLong(U);
+			dos.writeLong(L);
+			dos.writeLong(U);
 			dos.writeLong(v);
 			dos.writeInt(base);
 			dos.writeInt(MHTree.length);
