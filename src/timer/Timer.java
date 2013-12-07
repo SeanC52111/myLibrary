@@ -77,7 +77,7 @@ public class Timer {
 	 * Get laps times.
 	 * */
 	public ArrayList<Double> getLapsTime() {
-		ArrayList<Double> lapsTime = new ArrayList<>();
+		ArrayList<Double> lapsTime = new ArrayList<Double>();
 		for(Long end : laps) {
 			lapsTime.add((end - start) / MSSCALE);
 		}

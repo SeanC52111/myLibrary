@@ -79,9 +79,7 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V extends RW> /*imp
 		BPlusTree<Long, Data> tree = null;
 		try {
 			tree = BPlusTree.createBPTree(new Object[] {"./database/btree", new Integer(5), new Integer(6), Data.class, Data.class});
-		} catch (SecurityException | NullPointerException
-				| IllegalArgumentException
-				| IOException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -223,9 +221,9 @@ public /*abstract*/ class BPlusTree<K extends Comparable<K>, V extends RW> /*imp
 			headerID = m_pStorageManager.storeByteArray(headerID, new byte[1]);
 			classLeafData = (Class) ps.getProperty("LeafDataClass");
 			classInnerData = (Class) ps.getProperty("InnerDataClass");
-			int order = (int) ps.getProperty("Order");
-			int records = (int) ps.getProperty("Records");
-			this.factory = new MemoryNodeFactory<>(order, records);
+			int order = (Integer) ps.getProperty("Order");
+			int records = (Integer) ps.getProperty("Records");
+			this.factory = new MemoryNodeFactory<K, V>(order, records);
 			root = factory.getLeafNode(this, -1);
 			this.writeNode(root);
 			try {

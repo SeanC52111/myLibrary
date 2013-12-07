@@ -6,6 +6,8 @@ package testCases;
 import java.math.BigInteger;
 import java.util.Random;
 
+import IO.DataIO;
+import crypto.AES;
 import crypto.Gfunction;
 import crypto.Hasher;
 import crypto.RSA;
@@ -46,7 +48,7 @@ public class CryptoPrimitiveTest {
 		System.out.println("============ personel RSA encryption ================");
 		timer.reset();
 		BigInteger mes = BigInteger.probablePrime(1020, new Random()), cipher = null;
-		System.out.println(mes);
+//		System.out.println(mes);
 		for (int i = 0; i < times; i ++) {
 			cipher = rsa.encrypt(mes);
 		}
@@ -59,12 +61,33 @@ public class CryptoPrimitiveTest {
 		for (int i = 0; i < times; i ++) {
 			mes = rsa.decrypt(cipher);
 		}
-		System.out.println(mes);
+//		System.out.println(mes);
 		timer.stop();
 		System.out.println("Time Costs: " + timer.timeElapseinMs() / times + "ms");
 		System.out.println("=====================================================");
 		
+		System.out.println("============ personel AES encryption ================");
+		timer.reset();
+		byte[] sk = AES.getSampleKey();
+		byte[] byteMes = DataIO.padding("sdasfdasdf".getBytes(), 16);
+		for (int i = 0; i < times; i ++) {
+			byteMes = AES.encrypt(sk, byteMes);
+		}
+//		System.out.println(mes);
+		timer.stop();
+		System.out.println("Time Costs: " + timer.timeElapseinMs() / times + "ms");
+		System.out.println("=====================================================");
 		
+		System.out.println("=============== prime generation ================");
+		times = 100;
+		timer.reset();
+		for (int i = 0; i < times; i ++) {
+			mes = BigInteger.probablePrime(1024, new Random());
+		}
+//		System.out.println(mes);
+		timer.stop();
+		System.out.println("Time Costs: " + timer.timeElapseinMs() / times + "ms");
+		System.out.println("=====================================================");
 	}
 	
 	/**

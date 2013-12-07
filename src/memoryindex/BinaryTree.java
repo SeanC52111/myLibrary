@@ -326,7 +326,7 @@ public class BinaryTree<K extends Comparable<K>, V extends RW> implements RW{
      * @return
      */
     public BinaryTree<K, V>[] getChildren() {
-    	ArrayList<BinaryTree<K, V>> trees = new ArrayList<>();
+    	ArrayList<BinaryTree<K, V>> trees = new ArrayList<BinaryTree<K,V>>();
     	if (!isLeftChildEmpty()) trees.add(getLeftChild());
     	if (!isRightChildEmpty()) trees.add(getRightChild());
     	return trees.toArray(new BinaryTree[]{});

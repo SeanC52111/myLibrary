@@ -84,7 +84,7 @@ public class ShowData extends JFrame{
 	}
 	
 	class DataPanel extends JPanel{
-		ArrayList<Data> datas = new ArrayList<>();
+		ArrayList<Data> datas = new ArrayList<Data>();
 		DataPanel(Data[] datas){
 			for (Data data : datas) {
 				this.datas.add(data);
