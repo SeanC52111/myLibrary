@@ -76,6 +76,7 @@ public class MultiThread {
 	public MultiThread(Task[] tasks, int num) {
 		// TODO Auto-generated constructor stub
 		this.tasks = tasks;
+		this.ThreadNum = num;
 	}
 	
 	/**
