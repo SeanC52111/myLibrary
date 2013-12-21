@@ -1,5 +1,6 @@
 package IO;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -233,7 +234,6 @@ public class DataIO {
 	}
 	
 	public static String readString(DataInputStream ds){
-		int len;
 		byte[] data;
 		try {
 			data = readBytes(ds);
@@ -313,6 +313,20 @@ public class DataIO {
 			e.printStackTrace();
 		}
 		return data;
+	}
+	
+	public static byte[] readALLBytes(DataInputStream ds) {
+		ByteArrayOutputStream bs = new ByteArrayOutputStream();
+		byte[] buf = new byte[1024];
+        try {
+            for (int readNum; (readNum = ds.read(buf)) != -1;) {
+                bs.write(buf, 0, readNum); //no doubt here is 0
+                //Writes len bytes from the specified byte array starting at offset off to this byte array output stream.
+            }
+        } catch (IOException ex) {
+        	ex.printStackTrace();
+        }
+        return bs.toByteArray();
 	}
 	
 	public static void main(String[] args){
