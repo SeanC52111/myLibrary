@@ -1,5 +1,7 @@
 package memoryindex;
 
+import io.RW;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -8,7 +10,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import apple.laf.JRSUIUtils.Tree;
-import IO.RW;
 
 
 /**
@@ -402,24 +403,6 @@ public class BinaryTree<K extends Comparable<K>, V extends RW> implements RW{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
-
-
-	@Override
-	public void loadBytes(byte[] data) {
-		// TODO Auto-generated method stub
-		DataInputStream ds = new DataInputStream(new ByteArrayInputStream(data));
-		read(ds);
-	}
-
-
-	@Override
-	public byte[] toBytes() {
-		// TODO Auto-generated method stub
-		ByteArrayOutputStream bs = new ByteArrayOutputStream();
-		DataOutputStream ds = new DataOutputStream(bs);
-		write(ds);
-		return bs.toByteArray();
 	}
 	
 	public void setClassValue(Class classValue) {

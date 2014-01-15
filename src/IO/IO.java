@@ -1,5 +1,8 @@
-package IO;
+package io;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -7,10 +10,34 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 
+import sun.awt.image.ByteArrayImageSource;
+import io.Out;
 
-public class DataIO {
+
+public class IO {
 
 	public static String defaultCharSet = "ISO-8859-1";
+	
+	/**
+	 * Concatenate two byte arrays.
+	 * @param A
+	 * @param B
+	 * @return
+	 */
+    public static byte[] concat(final byte[] ... strs) {
+    	int len = 0;
+    	for (int i = 0; i < strs.length; i ++) {
+    		if (strs[i] != null) len += strs[i].length;
+    	}
+    	final byte[] result = new byte[len];
+    	for (int i = 0, p = 0; i < strs.length; i ++) {
+    		if (strs[i] != null) {
+    			System.arraycopy(strs[i], 0, result, p, strs[i].length);
+    			p += strs[i].length;
+    		}
+    	}
+        return result;
+    }
 	
 	public static String getIndent (int level) {
 		StringBuffer sb = new StringBuffer();
@@ -289,6 +316,18 @@ public class DataIO {
 		return compareBytes(data1, data2);
 	}
 	
+	public static byte[] toBytes(RW rw) {
+		ByteArrayOutputStream bs = new ByteArrayOutputStream();
+		DataOutputStream ds = new DataOutputStream(new BufferedOutputStream(bs));
+		rw.write(ds);
+		return bs.toByteArray();
+	}
+	
+	public static void loadBytes(RW rw, byte[] data) {
+		DataInputStream ds = new DataInputStream(new BufferedInputStream(new ByteArrayInputStream(data)));
+		rw.read(ds);
+	}
+	
 	public static void writeBytes(DataOutputStream ds, byte[] data) {
 		try {
 			if (data == null) {
@@ -343,5 +382,10 @@ public class DataIO {
 //			// TODO Auto-generated catch block
 //			e.printStackTrace();
 //		}
+		byte[]  str1 = "abc".getBytes();
+		byte[]  str2 = "def".getBytes();
+		System.out.println(toHexFromBytes(str1));
+		System.out.println(toHexFromBytes(str2));
+		System.out.println(toHexFromBytes(concat(str1, str2)));
 	}
 }

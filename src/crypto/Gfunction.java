@@ -1,5 +1,8 @@
 package crypto;
 
+import io.IO;
+import io.RW;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -15,8 +18,6 @@ import java.util.ArrayList;
 import javax.naming.directory.SearchControls;
 
 import timer.Timer;
-import IO.DataIO;
-import IO.RW;
 
 
 /**
@@ -219,26 +220,26 @@ public class Gfunction implements RW{
 		buildVO(1, 1, m + 1, cur + 1, str);
 		ByteArrayOutputStream bs = new ByteArrayOutputStream();
 		DataOutputStream ds = new DataOutputStream(bs);
-		DataIO.writeBytes(ds, getDigest());
-		DataIO.writeInt(ds, base);
+		IO.writeBytes(ds, getDigest());
+		IO.writeInt(ds, base);
 		if(isL){
-			DataIO.writeInt(ds, m + 1);
-			DataIO.writeInt(ds, -1);
+			IO.writeInt(ds, m + 1);
+			IO.writeInt(ds, -1);
 			for(int i = 0; i < m + 1; i++){
-				DataIO.writeBytes(ds, hashXmore1times(r, valueL[cur][i] - can[i]));
+				IO.writeBytes(ds, hashXmore1times(r, valueL[cur][i] - can[i]));
 			}
-			DataIO.writeBytes(ds, GvalueUs[cur]);
+			IO.writeBytes(ds, GvalueUs[cur]);
 		}else{
-			DataIO.writeInt(ds, -1);
-			DataIO.writeInt(ds, m + 1);
-			DataIO.writeBytes(ds, GvalueLs[cur]);
+			IO.writeInt(ds, -1);
+			IO.writeInt(ds, m + 1);
+			IO.writeBytes(ds, GvalueLs[cur]);
 			for(int i = 0; i < m + 1; i++){
-				DataIO.writeBytes(ds, hashXmore1times(r, valueU[cur][i] - can[i]));
+				IO.writeBytes(ds, hashXmore1times(r, valueU[cur][i] - can[i]));
 			}
 		}
-		DataIO.writeInt(ds, str.size());
+		IO.writeInt(ds, str.size());
 		for(int i = 0; i < str.size(); i++){
-			DataIO.writeBytes(ds, str.get(i));
+			IO.writeBytes(ds, str.get(i));
 		}
 		return bs.toByteArray();
 	}
@@ -370,13 +371,13 @@ public class Gfunction implements RW{
 		int can;
 		byte[] str;
 //		int len = ServerReturned.length;
-		int base = DataIO.readInt(ds);
-		int l = DataIO.readInt(ds);
-		int r = DataIO.readInt(ds);
+		int base = IO.readInt(ds);
+		int l = IO.readInt(ds);
+		int r = IO.readInt(ds);
 		if(l == -1){
 			int m = r - 1;
 			byte[][] strs = new byte[m + 1][];
-			byte[] gValueL = DataIO.readBytes(ds);
+			byte[] gValueL = IO.readBytes(ds);
 			if(x < 0){
 				try {
 					throw new Exception("value of x < 0!");
@@ -389,16 +390,16 @@ public class Gfunction implements RW{
 			for(int i = 0; i < m + 1; i++){
 				can = (int) (x % base);
 				x /= base;
-				strs[i] = hashXtimes(DataIO.readBytes(ds), can);
+				strs[i] = hashXtimes(IO.readBytes(ds), can);
 				//System.out.println(strs[i]);
 			}
 			str = Hasher.computeGeneralHashValue(strs);
 			//System.out.println("Computed : " + str);
 			str = Hasher.computeGeneralHashValue(new byte[][]{gValueL, str});
-			int len = DataIO.readInt(ds);
+			int len = IO.readInt(ds);
 			byte[][] serverReturned = new byte[len][];
 			for (int i = 0; i < len; i ++) {
-				serverReturned[i] = DataIO.readBytes(ds);
+				serverReturned[i] = IO.readBytes(ds);
 			}
 			return rebuildVO(0, len - 1, serverReturned, str);
 		}else if(r == -1){
@@ -415,14 +416,14 @@ public class Gfunction implements RW{
 			for(int i = 0; i < m + 1; i++){
 				can = (int)(x % base);
 				x /= base;
-				strs[i] = hashXtimes(DataIO.readBytes(ds), can);
+				strs[i] = hashXtimes(IO.readBytes(ds), can);
 			}
 			str = Hasher.computeGeneralHashValue(strs);
-			str = Hasher.computeGeneralHashValue(new byte[][]{str, DataIO.readBytes(ds)});
-			int len = DataIO.readInt(ds);
+			str = Hasher.computeGeneralHashValue(new byte[][]{str, IO.readBytes(ds)});
+			int len = IO.readInt(ds);
 			byte[][] serverReturned = new byte[len][];
 			for (int i = 0; i < len; i ++) {
-				serverReturned[i] = DataIO.readBytes(ds);
+				serverReturned[i] = IO.readBytes(ds);
 			}
 			return rebuildVO(0, len - 1, serverReturned, str);
 		}else{
@@ -438,14 +439,14 @@ public class Gfunction implements RW{
 	
 	public static boolean verifyValueGreaterThan(byte[] vo, long x) {
 		DataInputStream ds = new DataInputStream(new ByteArrayInputStream(vo));
-		byte[] digest = DataIO.readBytes(ds);
-		return DataIO.compareBytes(digest, clientComputed(ds, x - Gfunction.L));
+		byte[] digest = IO.readBytes(ds);
+		return IO.compareBytes(digest, clientComputed(ds, x - Gfunction.L));
 	}
 	
 	public static boolean verifyValueLessThan(byte[] vo, long x) {
 		DataInputStream ds = new DataInputStream(new ByteArrayInputStream(vo));
-		byte[] digest = DataIO.readBytes(ds);
-		return DataIO.compareBytes(digest, clientComputed(ds, Gfunction.U - x));
+		byte[] digest = IO.readBytes(ds);
+		return IO.compareBytes(digest, clientComputed(ds, Gfunction.U - x));
 	}
 
 	@Override
@@ -461,7 +462,7 @@ public class Gfunction implements RW{
 			whichSide = dis.readInt();
 			MHTree = new byte[len][];
 			for(int i = 0; i < len ; i++){
-				MHTree[i] = DataIO.readBytes(dis);
+				MHTree[i] = IO.readBytes(dis);
 			}
 			valueL = new int[m + 1][m + 1];
 			valueU = new int[m + 1][m + 1];
@@ -477,16 +478,16 @@ public class Gfunction implements RW{
 				if(dis.readBoolean()){
 					for(int j = 0; j <= m; j++){
 						//System.out.println(i + "\t" + j);
-						GvalueL[i][j] = DataIO.readBytes(dis);
+						GvalueL[i][j] = IO.readBytes(dis);
 					}
 				}
 				if(dis.readBoolean()){
 					for(int j = 0; j <= m ;j++){
-						GvalueU[i][j] = DataIO.readBytes(dis);
+						GvalueU[i][j] = IO.readBytes(dis);
 					}
 				}
-				GvalueLs[i] = DataIO.readBytes(dis);
-				GvalueUs[i] = DataIO.readBytes(dis);
+				GvalueLs[i] = IO.readBytes(dis);
+				GvalueUs[i] = IO.readBytes(dis);
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -514,7 +515,7 @@ public class Gfunction implements RW{
 			//System.out.println("m:\t" + m + " MHTree:\t" + MHTree.length);
 			dos.writeInt(whichSide);
 			for(int i = 0; i < MHTree.length; i++){
-				DataIO.writeBytes(dos, MHTree[i]);
+				IO.writeBytes(dos, MHTree[i]);
 			}
 			for(int i = 0 ; i <= m; i++){
 				for(int j = 0; j <= m; j++){
@@ -524,7 +525,7 @@ public class Gfunction implements RW{
 				if(GvalueL[i] != null){
 					dos.writeBoolean(true);
 					for(int j = 0; j <= m; j++){
-						DataIO.writeBytes(dos, GvalueL[i][j]);
+						IO.writeBytes(dos, GvalueL[i][j]);
 					}
 				}else{
 					dos.writeBoolean(false);
@@ -532,37 +533,20 @@ public class Gfunction implements RW{
 				if(GvalueU[i] != null){
 					dos.writeBoolean(true);
 					for(int j = 0; j <= m; j++){
-						DataIO.writeBytes(dos, GvalueU[i][j]);
+						IO.writeBytes(dos, GvalueU[i][j]);
 //						System.out.println(GvalueU[i][j].length);
 					}
 				}else{
 					dos.writeBoolean(false);
 				}
-				DataIO.writeBytes(dos, GvalueLs[i]);
-				DataIO.writeBytes(dos, GvalueUs[i]);
+				IO.writeBytes(dos, GvalueLs[i]);
+				IO.writeBytes(dos, GvalueUs[i]);
 			}
 			//dos.writeInt(m);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
-
-	@Override
-	public void loadBytes(byte[] data) {
-		// TODO Auto-generated method stub
-		DataInputStream ds = new DataInputStream(new ByteArrayInputStream(data));
-		read(ds);
-	}
-
-
-	@Override
-	public byte[] toBytes() {
-		// TODO Auto-generated method stub
-		ByteArrayOutputStream bs = new ByteArrayOutputStream();
-		DataOutputStream ds = new DataOutputStream(bs);
-		write(ds);
-		return bs.toByteArray();
 	}
 	
 	public byte[] prepareValueGreaterThan(long q) {
@@ -575,7 +559,7 @@ public class Gfunction implements RW{
 	
 	public static byte[] getDigest(byte[] vo) {
 		DataInputStream ds = new DataInputStream(new ByteArrayInputStream(vo));
-		return DataIO.readBytes(ds);
+		return IO.readBytes(ds);
 	}
 	
 	/**

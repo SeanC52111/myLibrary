@@ -1,10 +1,12 @@
 /**
  * 
  */
-package IO;
+package io;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+
+import io.RW;
 
 /**
  * @author chenqian
@@ -39,12 +41,6 @@ public class Data implements RW {
 	public void read(DataInputStream ds) {
 		// TODO Auto-generated method stub
 		
-	}
-
-	@Override
-	public void loadBytes(byte[] data) {
-		// TODO Auto-generated method stub
-		this.data = new String(data);
 	}
 	
 }

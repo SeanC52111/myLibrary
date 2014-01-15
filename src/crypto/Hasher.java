@@ -8,12 +8,12 @@ package crypto;
  * 
  * */
 
+import io.IO;
+
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
-
-import IO.DataIO;
 
 
 /**
@@ -98,12 +98,12 @@ public class Hasher {
 	public static String hashString(String str) {
 		try {
 			//System.err.println(str);
-			byte[] data = DataIO.toBytesFromHex(DataIO.toHexFromString(str));
+			byte[] data = IO.toBytesFromHex(IO.toHexFromString(str));
 			synchronized (lock) {
 				HASHER.update(data);
 				data = HASHER.digest();
 			}
-			return DataIO.toHexFromBytes(data);
+			return IO.toHexFromBytes(data);
 			//return EncodeConverter.byteToHexString(data);
 		} catch (Exception e) {
 			System.err.println("hashString fatal error. str:" + str);
@@ -123,12 +123,12 @@ public class Hasher {
 	public static String hashStringFromHex(String hex_str) {
 		try {
 			//System.err.println(str);
-			byte[] data = DataIO.toBytesFromHex(hex_str);
+			byte[] data = IO.toBytesFromHex(hex_str);
 			synchronized (lock) {
 				HASHER.update(data);
 				data = HASHER.digest();
 			}
-			return DataIO.toHexFromBytes(data);
+			return IO.toHexFromBytes(data);
 			//return EncodeConverter.byteToHexString(data);
 		} catch (Exception e) {
 			System.err.println("hashString fatal error. str:" + hex_str);
@@ -169,7 +169,7 @@ public class Hasher {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-				DataIO.writeBytes(dos, components[i]);
+				IO.writeBytes(dos, components[i]);
 			}
 			return Hasher.hashBytes(bs.toByteArray()); 
 		} else {

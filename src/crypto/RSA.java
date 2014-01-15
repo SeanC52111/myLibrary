@@ -3,6 +3,8 @@
  */
 package crypto;
 
+import io.IO;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
@@ -13,8 +15,6 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.BitSet;
-
-import IO.DataIO;
 
 
 /**
@@ -78,7 +78,7 @@ public class RSA {
 	}
 	
 	public String encrypt(String m){
-		BigInteger message = new BigInteger(DataIO.toHexFromString(m), 16);
+		BigInteger message = new BigInteger(IO.toHexFromString(m), 16);
 		return encrypt(message).toString(16);
 	}
 	
@@ -115,14 +115,14 @@ public class RSA {
 		BigInteger[] m = new BigInteger[messages.length];
 		for(int i = 0; i < messages.length; i++){
 			try {
-				m[i] = new BigInteger(messages[i].getBytes(DataIO.defaultCharSet));
+				m[i] = new BigInteger(messages[i].getBytes(IO.defaultCharSet));
 			} catch (UnsupportedEncodingException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 		try {
-			return new String(getCondensedRSA(m).toByteArray(), DataIO.defaultCharSet);
+			return new String(getCondensedRSA(m).toByteArray(), IO.defaultCharSet);
 		} catch (UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

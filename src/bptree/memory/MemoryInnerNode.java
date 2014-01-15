@@ -19,6 +19,8 @@
  */
 package bptree.memory;
 
+import io.RW;
+
 import java.lang.reflect.Array;
 
 import sun.security.action.GetLongAction;
@@ -26,7 +28,6 @@ import bptree.AbstractNode;
 import bptree.BPlusTree;
 import bptree.InnerNode;
 import bptree.Node;
-import IO.RW;
 
 /**
  *

@@ -3,10 +3,11 @@
  */
 package testCases;
 
+import io.IO;
+
 import java.math.BigInteger;
 import java.util.Random;
 
-import IO.DataIO;
 import crypto.AES;
 import crypto.Gfunction;
 import crypto.Hasher;
@@ -69,7 +70,7 @@ public class CryptoPrimitiveTest {
 		System.out.println("============ personel AES encryption ================");
 		timer.reset();
 		byte[] sk = AES.getSampleKey();
-		byte[] byteMes = DataIO.padding("sdasfdasdf".getBytes(), 16);
+		byte[] byteMes = IO.padding("sdasfdasdf".getBytes(), 16);
 		for (int i = 0; i < times; i ++) {
 			byteMes = AES.encrypt(sk, byteMes);
 		}

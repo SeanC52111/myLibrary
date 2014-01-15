@@ -19,6 +19,9 @@
  */
 package bptree;
 
+import io.Data;
+import io.RW;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -35,8 +38,6 @@ import storagemanager.IStorageManager;
 import storagemanager.InvalidPageException;
 import storagemanager.PropertySet;
 import storagemanager.RandomEvictionsBuffer;
-import IO.Data;
-import IO.RW;
 import bptree.memory.MemoryNodeFactory;
 
 

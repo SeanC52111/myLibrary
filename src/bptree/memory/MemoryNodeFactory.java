@@ -19,7 +19,7 @@
  */
 package bptree.memory;
 
-import IO.RW;
+import io.RW;
 import bptree.BPlusTree;
 import bptree.InnerNode;
 import bptree.LeafNode;

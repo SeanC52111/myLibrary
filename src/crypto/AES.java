@@ -3,6 +3,8 @@
  */
 package crypto;
 
+import io.IO;
+
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -12,8 +14,6 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
-
-import IO.DataIO;
 
 /**
  * 
@@ -63,7 +63,7 @@ public class AES {
 	 */
 	public static BigInteger encryptBI(byte[] key, byte[] mes) {
 		byte[] encrypted = encrypt(key, mes);
-		return new BigInteger(DataIO.toHexFromBytes(encrypted), 16);
+		return new BigInteger(IO.toHexFromBytes(encrypted), 16);
 	}
 	
 	/**
@@ -106,7 +106,7 @@ public class AES {
 	 * @return
 	 */
 	public static byte[] decryptBI(byte[] key, BigInteger encrypted) {
-		byte[] data = DataIO.padding(DataIO.toBytesFromHex(encrypted.toString(16)), 16);
+		byte[] data = IO.padding(IO.toBytesFromHex(encrypted.toString(16)), 16);
 		return decrypt(key, data);
 	}
 	
@@ -115,7 +115,7 @@ public class AES {
 	 * @return
 	 */
 	public static byte[] getSampleKey() {
-		return DataIO.toBytesFromHex("140b41b22a29beb4061bda66b6747e14");
+		return IO.toBytesFromHex("140b41b22a29beb4061bda66b6747e14");
 	}
 	
 	/**
@@ -130,17 +130,17 @@ public class AES {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		byte[] key = DataIO.toBytesFromHex("140b41b22a29beb4061bda66b6747e14");
+		byte[] key = IO.toBytesFromHex("140b41b22a29beb4061bda66b6747e14");
 //		byte[] mes = DataIO.padding(DataIO.toBytesFromHex("12abcd"), 16);
-		byte[] mes = DataIO.toBytesFromHex("12abcd");
+		byte[] mes = IO.toBytesFromHex("12abcd");
 		System.out.println(mes.length);
-		System.out.println("message to encrypt:" + DataIO.toHexFromBytes(mes));
+		System.out.println("message to encrypt:" + IO.toHexFromBytes(mes));
 		BigInteger cipherBI = AES.encryptBI(key, mes);
 		byte[] cipher = AES.encrypt(key, mes);
 		byte[] mes2 = AES.decryptBI(key, cipherBI);
-		System.out.println("message after encryptBI:" + DataIO.toHexFromBytes(mes2));
+		System.out.println("message after encryptBI:" + IO.toHexFromBytes(mes2));
 		mes2 = AES.decrypt(key, cipher);
-		System.out.println("message after encrypt:" + DataIO.toHexFromBytes(mes2));
+		System.out.println("message after encrypt:" + IO.toHexFromBytes(mes2));
 	}
 
 }

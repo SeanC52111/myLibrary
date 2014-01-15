@@ -20,9 +20,10 @@
 package bptree.memory; 
 
 
+import io.RW;
+
 import java.lang.reflect.Array;
 
-import IO.RW;
 import bptree.AbstractNode;
 import bptree.BPlusTree;
 import bptree.LeafNode;

@@ -19,6 +19,10 @@
  */
 package bptree;
 
+import io.Data;
+import io.IO;
+import io.RW;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -28,9 +32,6 @@ import java.lang.reflect.Array;
 import java.util.Arrays;
 
 import spatialindex.SpatialIndex;
-import IO.Data;
-import IO.DataIO;
-import IO.RW;
 
 
 /**
@@ -176,7 +177,7 @@ public abstract class AbstractNode<K, V extends RW> implements Node<K, V> /*impl
 //		m_identifier 	= ds.readInt();
 		slots 			= ds.readInt();
 		if (this instanceof InnerNode) {
-			m_pIdentifier 	= DataIO.readIntArrays(ds);
+			m_pIdentifier 	= IO.readIntArrays(ds);
 		}
 		for (int i = 0; i < slots; i ++) {
 			keys[i] = (K) new Long(ds.readLong());
@@ -220,7 +221,7 @@ public abstract class AbstractNode<K, V extends RW> implements Node<K, V> /*impl
 //		ds.writeInt(m_identifier);
 		ds.writeInt(slots);
 		if (this instanceof InnerNode) {
-			DataIO.writeIntArrays(ds, m_pIdentifier);
+			IO.writeIntArrays(ds, m_pIdentifier);
 		}
 		for (int i = 0; i < slots; i ++) {
 			ds.writeLong((Long) keys[i]);
