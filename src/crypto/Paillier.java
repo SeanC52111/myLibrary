@@ -16,6 +16,11 @@ package crypto;
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import io.IO;
+import io.RW;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.math.*;
 import java.util.*;
 
@@ -37,7 +42,7 @@ import math.BigMathUtility;
  * "Paillier Encryption and Signature Schemes"
  * 
  */
-public class Paillier {
+public class Paillier implements RW{
 
     /**
      * p and q are two large primes. 
@@ -241,4 +246,27 @@ public class Paillier {
         BigInteger c3 = paillier.Encrypt(coes1[0].add(coes2[0]), coes1[1].multiply(coes2[1]));
         System.out.println(c3);
     }
+
+	@Override
+	public void read(DataInputStream ds) {
+		// TODO Auto-generated method stub
+		p = IO.readBigInteger(ds);
+		q = IO.readBigInteger(ds);
+		lambda = IO.readBigInteger(ds);
+		n = IO.readBigInteger(ds);
+		nsquare = n.multiply(n);
+		g = IO.readBigInteger(ds);
+		bitLength = IO.readInt(ds);
+	}
+
+	@Override
+	public void write(DataOutputStream ds) {
+		// TODO Auto-generated method stub
+		IO.writeBigInteger(ds, p);
+		IO.writeBigInteger(ds, q);
+		IO.writeBigInteger(ds, lambda);
+		IO.writeBigInteger(ds, n);
+		IO.writeBigInteger(ds, g);
+		IO.writeInt(ds, bitLength);
+	}
 }

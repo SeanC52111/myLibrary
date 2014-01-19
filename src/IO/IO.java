@@ -6,6 +6,10 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
@@ -222,7 +226,7 @@ public class IO {
 		int len;
 		byte[] data = null;
 		try {
-			len = ds.readInt();
+			if((len = ds.readInt()) == 0) return null;
 			data = new byte[len];
 			ds.read(data, 0, len);
 		} catch (IOException e) {
@@ -316,11 +320,39 @@ public class IO {
 		return compareBytes(data1, data2);
 	}
 	
+	public static void toFile(RW rw, File file) {
+		try {
+			DataOutputStream ds = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
+			rw.write(ds);
+			ds.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	public static byte[] toBytes(RW rw) {
 		ByteArrayOutputStream bs = new ByteArrayOutputStream();
 		DataOutputStream ds = new DataOutputStream(new BufferedOutputStream(bs));
 		rw.write(ds);
 		return bs.toByteArray();
+	}
+	
+	public static void loadFile(RW rw, File file) {
+		try {
+			DataInputStream ds = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
+			rw.read(ds);
+			ds.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public static void loadBytes(RW rw, byte[] data) {
