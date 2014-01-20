@@ -338,6 +338,12 @@ public class IO {
 		ByteArrayOutputStream bs = new ByteArrayOutputStream();
 		DataOutputStream ds = new DataOutputStream(new BufferedOutputStream(bs));
 		rw.write(ds);
+		try {
+			ds.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return bs.toByteArray();
 	}
 	
