@@ -12,16 +12,18 @@ import java.util.ArrayList;
  */
 public class MultiThread {
 
-	final int[] lock = new int[1];
-	int ThreadNum = 2;
-	boolean[] threadStatus 	=  null;
-	Task[] tasks 	=  null;
+	boolean 		verbose			= false;
+	int				mod				= 1;
+	final int[] 	lock 			= new int[1];
+	int 			threadNum 		= 2;
+	boolean[] 		threadStatus 	= null;
+	Task[] 			tasks 			= null;
 	
 	public void run() {
 		lock[0] = 0;
-		threadStatus = new boolean[ThreadNum];
+		threadStatus = new boolean[threadNum];
 		final int totalNum = tasks.length;
-		for(int id = 0; id < ThreadNum; id ++){
+		for(int id = 0; id < threadNum; id ++) {
 			threadStatus[id] = false;
 			final int tid  = id;
 			new Thread(new Runnable() {
@@ -34,8 +36,13 @@ public class MultiThread {
 							curid = lock[0];
 							lock[0]++;	
 						}
-						if(curid >= totalNum)break;
+						if(curid >= totalNum) break;
 						tasks[curid].run();
+						if (verbose) {
+							if ((curid + 1) % mod == 0) {
+								System.out.println("fin task " + curid);
+							}
+						}
 					}
 					threadStatus[threadId] = true;
 				}
@@ -49,18 +56,19 @@ public class MultiThread {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			for(int i = 0; i < ThreadNum; i++){
-				if(threadStatus[i] == false){
+			for(int i = 0; i < threadNum; i++) {
+				if(threadStatus[i] == false) {
 					found = true;
 				}
 			}
-			if(!found)break;
+			if(!found) break;
 		}
 	}
 	
 	public void setThreadNum(int num) {
-		this.ThreadNum = num;
+		this.threadNum = num;
 	}
+	
 	/**
 	 * 
 	 */
@@ -68,17 +76,42 @@ public class MultiThread {
 		// TODO Auto-generated constructor stub
 	}
 	
-	public MultiThread(int num) {
+	public MultiThread(int threadNum) {
 		// TODO Auto-generated constructor stub
-		this.ThreadNum = num;
+		this.threadNum = threadNum;
 	}
 
-	public MultiThread(Task[] tasks, int num) {
+	public MultiThread(Task[] tasks, int threadNum) {
 		// TODO Auto-generated constructor stub
 		this.tasks = tasks;
-		this.ThreadNum = num;
+		this.threadNum = threadNum;
 	}
 	
+	public MultiThread(Task[] tasks, int threadNum, boolean verbose, int mod) {
+		this.tasks 		= tasks;
+		this.threadNum 	= threadNum;
+		this.verbose	= verbose;
+		this.mod		= mod;
+	}
+	
+	
+	
+	public boolean isVerbose() {
+		return verbose;
+	}
+
+	public void setVerbose(boolean verbose) {
+		this.verbose = verbose;
+	}
+
+	public int getMod() {
+		return mod;
+	}
+
+	public void setMod(int mod) {
+		this.mod = mod;
+	}
+
 	/**
 	 * @param args
 	 */
