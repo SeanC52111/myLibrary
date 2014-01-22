@@ -42,12 +42,10 @@ public class QuadTree {
 		if (!boundary.contains(p)) {
 			return false;
 		}		
-		
 		cnt ++;
-		points.add(p);
-		ids.add(id);
-		
-		if (points.size() <= capacity) {
+		if (points != null && points.size() <= capacity) {			
+			points.add(p);
+			ids.add(id);
 			return true;
 		} else {			
 			if (chTree == null) {
@@ -57,20 +55,27 @@ public class QuadTree {
 					chTree[i] = new QuadTree(capacity, regions[i]);
 				}
 			}
-			for (int j = 0; j < ids.size(); j ++) {
-				boolean suc = false;
-				for (int i = 0; i < dim; i ++) {
-					if (chTree[i].insert(ids.get(j), points.get(j))) {
-						suc = true;
-						break;
+			if (points != null) {
+				for (int j = 0; j < ids.size(); j ++) {
+					boolean found = false;
+					for (int i = 0; i < dim; i ++) {
+						if (chTree[i].insert(ids.get(j), points.get(j))) {
+							found = true;
+							break;
+						}
 					}
+					if (!found) return false;
 				}
-				if (!suc) {
-					return false;
+				this.clearPoints();
+			} 
+			boolean found = false;
+			for (int i = 0; i < dim; i ++) {
+				if (chTree[i].insert(id, p)) {
+					found = true;
+					break;
 				}
 			}
-			this.clearPoints();
-			return true;
+			return found;
 		}
 	}
 	
