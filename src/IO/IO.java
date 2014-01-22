@@ -43,12 +43,13 @@ public class IO {
         return result;
     }
 	
-	public static String getIndent (int level) {
+	public static StringBuffer getIndent (int level) {
 		StringBuffer sb = new StringBuffer();
 		for (int i = 0; i < level; i ++) {
 			sb.append("  ");
 		}
-		return sb.toString();
+		sb.append("|");
+		return sb;
 	}
 	
 	/**

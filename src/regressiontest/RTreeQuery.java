@@ -127,7 +127,7 @@ public class RTreeQuery
 			long end = System.currentTimeMillis();
 
 			MyQueryStrategy2 qs = new MyQueryStrategy2();
-			tree.queryStrategy(qs);
+			tree.queryStrategy(((RTree)tree).getRootId(), qs);
 
 			System.err.println("Indexed space: " + qs.m_indexedSpace);
 			System.err.println("Operations: " + count);

@@ -91,7 +91,7 @@ public class MultiThread {
 		this.tasks 		= tasks;
 		this.threadNum 	= threadNum;
 		this.verbose	= verbose;
-		this.mod		= mod;
+		this.mod		= Math.max(mod, this.mod);
 	}
 	
 	

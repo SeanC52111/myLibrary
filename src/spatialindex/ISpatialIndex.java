@@ -41,7 +41,7 @@ public interface ISpatialIndex
 	public void pointLocationQuery(final IShape query, final IVisitor v);
 	public void nearestNeighborQuery(int k, final IShape query, final IVisitor v, INearestNeighborComparator nnc);
 	public void nearestNeighborQuery(int k, final IShape query, final IVisitor v);
-	public void queryStrategy(final IQueryStrategy qs);
+	public void queryStrategy(int nodeId, final IQueryStrategy qs);
 	public PropertySet getIndexProperties();
 	public void addWriteNodeCommand(INodeCommand nc);
 	public void addReadNodeCommand(INodeCommand nc);

@@ -12,10 +12,8 @@ public class MathPoint {
 	private double[] coords;
 	
 	public MathPoint(MathPoint p){
-		coords = new double[p.getCoordsLen()];
-		for(int i = 0; i < p.getCoordsLen(); i++){
-			coords[i] = p.getCoord(i);
-		}
+		coords = new double[p.getDim()];
+		System.arraycopy(p.coords, 0, coords, 0, coords.length);
 	}
 	
 	public MathPoint(){
@@ -77,7 +75,11 @@ public class MathPoint {
 		return coords;
 	}
 	
-	public int getCoordsLen(){
+	public void setCoord(int i, double v) {
+		coords[i] = v;
+	}
+	
+	public int getDim(){
 		return coords.length;
 	}
 	
@@ -87,13 +89,13 @@ public class MathPoint {
 	}
 	
 	public MathPoint getNorm(double k){
-		double[] zero = new double[getCoordsLen()];
-		for(int i = 0; i < getCoordsLen(); i ++){
+		double[] zero = new double[getDim()];
+		for(int i = 0; i < getDim(); i ++){
 			zero[i] = 0;
 		}
 		double dist = MathUtility.getDistance(zero, getCoords());
-		double[] ncoords = new double[getCoordsLen()];
-		for(int i = 0; i < getCoordsLen(); i ++){
+		double[] ncoords = new double[getDim()];
+		for(int i = 0; i < getDim(); i ++){
 			ncoords[i] = getCoord(i) * k / dist;
 		}
 		return new MathPoint(ncoords);
@@ -104,55 +106,55 @@ public class MathPoint {
 	}
 	
 	public static MathPoint add(MathPoint a, MathPoint b){
-		if(a.getCoordsLen() != b.getCoordsLen()){
+		if(a.getDim() != b.getDim()){
 			System.out.println("warning: a and b has different dimensions");
 			return null;
 		}
-		double [] coords = new double[a.getCoordsLen()];
-		for(int i = 0; i < a.getCoordsLen(); i ++){
+		double [] coords = new double[a.getDim()];
+		for(int i = 0; i < a.getDim(); i ++){
 			coords[i] = a.getCoord(i) + b.getCoord(i);
 		}
 		return new MathPoint(coords);
 	}
 	
 	public MathPoint add(MathPoint b){
-		if(getCoordsLen() != b.getCoordsLen()){
+		if(getDim() != b.getDim()){
 			System.out.println("warning: a and b has different dimensions");
 			return null;
 		}
-		double [] coords = new double[getCoordsLen()];
-		for(int i = 0; i < getCoordsLen(); i ++){
+		double [] coords = new double[getDim()];
+		for(int i = 0; i < getDim(); i ++){
 			coords[i] = getCoord(i) + b.getCoord(i);
 		}
 		return new MathPoint(coords);
 	}
 	
 	public static MathPoint minus(MathPoint a, MathPoint b){
-		if(a.getCoordsLen() != b.getCoordsLen()){
+		if(a.getDim() != b.getDim()){
 			System.out.println("warning: a and b has different dimensions");
 			return null;
 		}
-		double [] coords = new double[a.getCoordsLen()];
-		for(int i = 0; i < a.getCoordsLen(); i ++){
+		double [] coords = new double[a.getDim()];
+		for(int i = 0; i < a.getDim(); i ++){
 			coords[i] = a.getCoord(i) - b.getCoord(i);
 		}
 		return new MathPoint(coords);
 	}
 	
 	public MathPoint minus(MathPoint b){
-		if(getCoordsLen() != b.getCoordsLen()){
+		if(getDim() != b.getDim()){
 			System.out.println("warning: a and b has different dimensions");
 			return null;
 		}
-		double [] coords = new double[getCoordsLen()];
-		for(int i = 0; i < getCoordsLen(); i ++){
+		double [] coords = new double[getDim()];
+		for(int i = 0; i < getDim(); i ++){
 			coords[i] = getCoord(i) - b.getCoord(i);
 		}
 		return new MathPoint(coords);
 	}
 	
 	public void multiplyToSelf(double k){
-		for(int i = 0; i < getCoordsLen(); i ++){
+		for(int i = 0; i < getDim(); i ++){
 			coords[i] *= k;
 		}
 	}
@@ -163,24 +165,24 @@ public class MathPoint {
 	}
 	
 	public static MathPoint dotproduct(MathPoint a, MathPoint b){
-		if(a.getCoordsLen() != b.getCoordsLen()){
+		if(a.getDim() != b.getDim()){
 			System.out.println("warning: a and b has different dimensions");
 			return null;
 		}
-		double [] coords = new double[a.getCoordsLen()];
-		for(int i = 0; i < a.getCoordsLen(); i ++){
+		double [] coords = new double[a.getDim()];
+		for(int i = 0; i < a.getDim(); i ++){
 			coords[i] = a.getCoord(i) * b.getCoord(i);
 		}
 		return new MathPoint(coords);
 	}
 	
 	public MathPoint dotproduct(MathPoint b){
-		if(getCoordsLen() != b.getCoordsLen()){
+		if(getDim() != b.getDim()){
 			System.out.println("warning: a and b has different dimensions");
 			return null;
 		}
-		double [] coords = new double[getCoordsLen()];
-		for(int i = 0; i < getCoordsLen(); i ++){
+		double [] coords = new double[getDim()];
+		for(int i = 0; i < getDim(); i ++){
 			coords[i] = getCoord(i) * b.getCoord(i);
 		}
 		return new MathPoint(coords);
@@ -191,8 +193,8 @@ public class MathPoint {
 	}
 	
 	public boolean equals(MathPoint b){
-		if(getCoordsLen() != b.getCoordsLen())return false;
-		for(int i = 0; i < getCoordsLen(); i++){
+		if(getDim() != b.getDim())return false;
+		for(int i = 0; i < getDim(); i++){
 			if(MathUtility.D(getCoord(i) - b.getCoord(i)) != 0)return false;
 		}
 		return true;

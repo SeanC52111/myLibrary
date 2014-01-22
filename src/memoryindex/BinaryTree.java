@@ -413,8 +413,8 @@ public class BinaryTree<K extends Comparable<K>, V extends RW> implements RW{
 		return classValue;
 	}
 	
-	public void queryStrategy(final IQueryStrategy qs) {
-		BinaryTree[] next = new BinaryTree[]{this};
+	public void queryStrategy(BinaryTree tree, final IQueryStrategy qs) {
+		BinaryTree[] next = new BinaryTree[]{tree};
 		while (true) {
 			BinaryTree n = next[0];
 			boolean[] hasNext = new boolean[] {false};

@@ -78,6 +78,13 @@ public class RTree implements ISpatialIndex
 	ArrayList m_readNodeCommands = new ArrayList();
 	ArrayList m_deleteNodeCommands = new ArrayList();
 
+	public int getRootId() {
+		return m_rootID;
+	}
+	
+	public Node getRoot() {
+		return readNode(m_rootID);
+	}
 	
 	/**
 	 * create a Rtree with default page size 4096, and this a disk based Rtree.
@@ -489,11 +496,11 @@ public class RTree implements ISpatialIndex
 		nearestNeighborQuery(k, query, v, nnc);
 	}
 
-	public void queryStrategy(final IQueryStrategy qs)
+	public void queryStrategy(int nodeId, final IQueryStrategy qs)
 	{
 		m_rwLock.read_lock();
 
-		int[] next = new int[] {m_rootID};
+		int[] next = new int[] {nodeId};
 
 		try
 		{
@@ -1061,7 +1068,7 @@ public class RTree implements ISpatialIndex
 		return page;
 	}
 
-	protected Node readNode(int id)
+	public Node readNode(int id)
 	{
 		byte[] buffer;
 		DataInputStream ds = null;
@@ -1103,7 +1110,7 @@ public class RTree implements ISpatialIndex
 		return n;
 	}
 
-	protected void deleteNode(Node n)
+	public void deleteNode(Node n)
 	{
 		try
 		{
