@@ -163,7 +163,7 @@ public class QuadTree {
 		ids = null;
 	}
 	
-	public void queryStrategy(QuadTree tree, final IQueryStrategy qs) {
+	public static void queryStrategy(QuadTree tree, final IQueryStrategyQT qs) {
 		QuadTree[] next = new QuadTree[]{tree};
 		while (true) {
 			QuadTree n = next[0];
@@ -189,6 +189,10 @@ public class QuadTree {
 		this.boundary = boundary;
 	}
 
+	public int getDim() {
+		return dim;
+	}
+	
 	public ArrayList<Point> getPoints() {
 		return points;
 	}	
@@ -231,6 +235,14 @@ public class QuadTree {
 		sb.append(indent);
 		sb.append("cnt: " + cnt);
 		return sb.toString();
+	}
+	
+	public QuadTree[] getChTrees() {
+		return chTree;
+	}
+	
+	public ArrayList<Integer> getIds() {
+		return ids;
 	}
 	
 	/**
