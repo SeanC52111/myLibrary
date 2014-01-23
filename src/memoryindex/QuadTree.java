@@ -4,6 +4,7 @@
 package memoryindex;
 
 import io.IO;
+import io.RW;
 
 import java.util.ArrayList;
 
@@ -22,7 +23,7 @@ public class QuadTree {
 	private int 				capacity 	= 4;
 	private Region 				boundary 	= null;
 	private ArrayList<Point> 	points		= null;
-	private ArrayList<Integer>	ids			= null;
+	private ArrayList<RW>		values 		= null;
 	private QuadTree[] 			chTree 		= null;
 	private int					dim			= 4;
 	private int 				cnt			= 0;
@@ -35,17 +36,17 @@ public class QuadTree {
 		this.capacity 	= capacity;
 		this.boundary 	= boundary;
 		this.points 	= new ArrayList<Point>();
-		this.ids 		= new ArrayList<Integer>();
+		this.values 	= new ArrayList<RW>();
 	}
 	
-	public boolean insert(int id, Point p) {
+	public boolean insert(Point p, RW value) {
 		if (!boundary.contains(p)) {
 			return false;
 		}		
 		cnt ++;
 		if (points != null && points.size() <= capacity) {			
 			points.add(p);
-			ids.add(id);
+			values.add(value);
 			return true;
 		} else {			
 			if (chTree == null) {
@@ -56,10 +57,10 @@ public class QuadTree {
 				}
 			}
 			if (points != null) {
-				for (int j = 0; j < ids.size(); j ++) {
+				for (int j = 0; j < points.size(); j ++) {
 					boolean found = false;
 					for (int i = 0; i < dim; i ++) {
-						if (chTree[i].insert(ids.get(j), points.get(j))) {
+						if (chTree[i].insert(points.get(j), values.get(j))) {
 							found = true;
 							break;
 						}
@@ -70,7 +71,7 @@ public class QuadTree {
 			} 
 			boolean found = false;
 			for (int i = 0; i < dim; i ++) {
-				if (chTree[i].insert(id, p)) {
+				if (chTree[i].insert(p, value)) {
 					found = true;
 					break;
 				}
@@ -114,7 +115,7 @@ public class QuadTree {
 	 * @param id
 	 * @return
 	 */
-	public boolean remove(int id, Point p) {
+	public boolean remove(Point p) {
 		if (!boundary.contains(p)) {
 			return false;
 		}
@@ -122,9 +123,9 @@ public class QuadTree {
 		cnt --;
 		if (points != null) {
 			for (int i = 0; i < points.size(); i ++) {
-				if (ids.get(i) == id) {
+				if (points.get(i).equals(p)) {
 					points.remove(i);
-					ids.remove(i);
+					values.remove(i);
 					return true;
 				}
 			}
@@ -136,7 +137,7 @@ public class QuadTree {
 			
 			boolean suc = false;
 			for (int i = 0; i < dim; i ++) {
-				if (chTree[i].remove(id, p)) {
+				if (chTree[i].remove(p)) {
 					suc = true;
 					break;
 				}
@@ -144,10 +145,10 @@ public class QuadTree {
 			
 			if (cnt <= capacity / 2) {
 				points = new ArrayList<Point>();
-				ids = new ArrayList<Integer>();
+				values = new ArrayList<RW>();
 				for (int i = 0; i < dim; i ++) {
 					points.addAll(chTree[i].points);
-					ids.addAll(chTree[i].ids);
+					values.addAll(chTree[i].values);
 					chTree[i].clearPoints();
 					chTree[i] = null;
 				}
@@ -160,7 +161,7 @@ public class QuadTree {
 	
 	public void clearPoints() {
 		points = null;
-		ids = null;
+		values = null;
 	}
 	
 	public static void queryStrategy(QuadTree tree, final IQueryStrategyQT qs) {
@@ -207,11 +208,11 @@ public class QuadTree {
 		sb.append(indent + "-------------------\n");
 		sb.append(indent); 
 		sb.append(boundary + "\n");
-		if (ids != null) {
+		if (points != null) {
 			sb.append(indent + "[");
-			for (int i = 0; i < ids.size(); i ++) {
+			for (int i = 0; i < points.size(); i ++) {
 				if (i != 0) sb.append(", ");
-				sb.append(ids.get(i));
+				sb.append(points.get(i));
 			}
 			sb.append("]\n");
 		}
@@ -241,8 +242,8 @@ public class QuadTree {
 		return chTree;
 	}
 	
-	public ArrayList<Integer> getIds() {
-		return ids;
+	public ArrayList<RW> getValues() {
+		return values;
 	}
 	
 	/**
