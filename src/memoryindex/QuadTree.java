@@ -246,6 +246,14 @@ public class QuadTree {
 		return values;
 	}
 	
+	public void setValue(ArrayList<RW> values) {
+		this.values = values;
+	}
+	
+	public int getCnt() {
+		return cnt;
+	}
+	
 	/**
 	 * @param args
 	 */
