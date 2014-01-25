@@ -93,7 +93,7 @@ public class CryptoPrimitiveTest {
 		System.out.println("Time Costs: " + timer.timeElapseinMs() / times + "ms");
 		System.out.println("=====================================================");
 		
-		Paillier paillier = new Paillier();
+		Paillier paillier = new Paillier(1280, 64);
 		BigInteger cipherPai = null;
 		System.out.println("=============== Paillier encryption ================");
 		timer.reset();

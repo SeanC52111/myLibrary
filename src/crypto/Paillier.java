@@ -68,6 +68,8 @@ public class Paillier implements RW{
 
     private BigInteger eulorTotient = null;
     
+    private BigInteger u = null;
+    
     /**
      * Constructs an instance of the Paillier cryptosystem.
      * @param bitLengthVal number of bits of modulus
@@ -96,6 +98,7 @@ public class Paillier implements RW{
     	nsquare = new BigInteger("9137102646213891968873960082305956179850467281348997924378425537822941327328353711486252262922644444840455727525901197729954054449881680414499250710131588148276328442397092515587006832309623836117942996692050118217219959552770621784470482084525859284361578517199520103365067471771138969454007315313886974448656193939941734279189230182934062065753837306411996014007893758334981553399496819364055499244835592090097892734327146277218349751641763468959032202918273753078465610458996364688468982697036369663280854824811270106731404956468032313803254120975168652977941430279563917186236894004867711790171585042367637685481");
     	g = new BigInteger("2");
     	bitLength = 1024;
+    	u =  g.modPow(lambda, nsquare).subtract(BigInteger.ONE).divide(n).modInverse(n);
     }
     
     /**
@@ -119,6 +122,7 @@ public class Paillier implements RW{
             System.out.println("g is not good. Choose g again.");
             System.exit(1);
         }
+        u =  g.modPow(lambda, nsquare).subtract(BigInteger.ONE).divide(n).modInverse(n);
     }
 
     /**
@@ -170,7 +174,7 @@ public class Paillier implements RW{
      * @return plaintext as a BigInteger
      */
     public BigInteger decrypt(BigInteger c) {
-        BigInteger u = g.modPow(lambda, nsquare).subtract(BigInteger.ONE).divide(n).modInverse(n);
+//        BigInteger u = g.modPow(lambda, nsquare).subtract(BigInteger.ONE).divide(n).modInverse(n);
         return c.modPow(lambda, nsquare).subtract(BigInteger.ONE).divide(n).multiply(u).mod(n);
     }
     
@@ -257,6 +261,7 @@ public class Paillier implements RW{
 		nsquare = n.multiply(n);
 		g = IO.readBigInteger(ds);
 		bitLength = IO.readInt(ds);
+		u = IO.readBigInteger(ds);
 	}
 
 	@Override
@@ -268,5 +273,6 @@ public class Paillier implements RW{
 		IO.writeBigInteger(ds, n);
 		IO.writeBigInteger(ds, g);
 		IO.writeInt(ds, bitLength);
+		IO.writeBigInteger(ds, u);
 	}
 }
