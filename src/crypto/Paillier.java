@@ -74,14 +74,14 @@ public class Paillier implements RW{
      * @param certainty The probability that the new BigInteger represents a prime number will exceed (1 - 2^(-certainty)). The execution time of this constructor is proportional to the value of this parameter.
      */
     public Paillier(int bitLengthVal, int certainty) {
-        KeyGeneration(bitLengthVal, certainty);
+        keyGeneration(bitLengthVal, certainty);
     }
 
     /**
      * Constructs an instance of the Paillier cryptosystem with 512 bits of modulus and at least 1-2^(-64) certainty of primes generation.
      */
     public Paillier() {
-        KeyGeneration(1024, 64);
+        keyGeneration(1024, 64);
     }
 
     public Paillier(boolean load){
@@ -103,7 +103,7 @@ public class Paillier implements RW{
      * @param bitLengthVal number of bits of modulus.
      * @param certainty The probability that the new BigInteger represents a prime number will exceed (1 - 2^(-certainty)). The execution time of this constructor is proportional to the value of this parameter.
      */
-    public void KeyGeneration(int bitLengthVal, int certainty) {
+    public void keyGeneration(int bitLengthVal, int certainty) {
         bitLength = bitLengthVal;
         /*Constructs two randomly generated positive BigIntegers that are probably prime, with the specified bitLength and certainty.*/
         p = new BigInteger(bitLength / 2, certainty, new Random());
@@ -127,7 +127,7 @@ public class Paillier implements RW{
      * @param r random plaintext to help with encryption
      * @return ciphertext as a BigInteger
      */
-    public BigInteger Encrypt(BigInteger m, BigInteger r) {
+    public BigInteger encrypt(BigInteger m, BigInteger r) {
         return g.modPow(m, nsquare).multiply(r.modPow(n, nsquare)).mod(nsquare);
     }
 
@@ -136,9 +136,9 @@ public class Paillier implements RW{
      * @param m plaintext as a BigInteger
      * @return ciphertext as a BigInteger
      */
-    public BigInteger Encryption(BigInteger m) {
+    public BigInteger encrypt(BigInteger m) {
         BigInteger r = new BigInteger(bitLength, new Random());
-        return Encrypt(m, r);
+        return encrypt(m, r);
 
     }
 
@@ -146,14 +146,14 @@ public class Paillier implements RW{
      * by qchen
      * This function encrypt the message without considering r
      * */
-    public BigInteger EncryptWithoutR(BigInteger m){
+    public BigInteger encryptWithoutR(BigInteger m){
     	return g.modPow(m, nsquare);
     }
     
     /**
      * Get Eulor Totient Function.
      * */
-    public BigInteger GetEulorTotient(){
+    public BigInteger getEulorTotient(){
     	if(eulorTotient == null){
     		eulorTotient = p.subtract(BigInteger.ONE).multiply(q.subtract(BigInteger.ONE)).multiply(n);
     	}
@@ -169,13 +169,13 @@ public class Paillier implements RW{
      * @param c ciphertext as a BigInteger
      * @return plaintext as a BigInteger
      */
-    public BigInteger Decrypt(BigInteger c) {
+    public BigInteger decrypt(BigInteger c) {
         BigInteger u = g.modPow(lambda, nsquare).subtract(BigInteger.ONE).divide(n).modInverse(n);
         return c.modPow(lambda, nsquare).subtract(BigInteger.ONE).divide(n).multiply(u).mod(n);
     }
     
-    public BigInteger[] Decrypt2(BigInteger c){
-    	BigInteger x = Decrypt(c);
+    public BigInteger[] decrypt2(BigInteger c){
+    	BigInteger x = decrypt(c);
     	BigInteger y = c.multiply(g.modPow(x, n).modInverse(n)).mod(n).modPow(n.modInverse(lambda), n);
     	return new BigInteger[]{x, y};
     }
@@ -216,34 +216,34 @@ public class Paillier implements RW{
         BigInteger m1 = new BigInteger("20");
         BigInteger m2 = new BigInteger("60");
         /* encryption*/
-        BigInteger em1 = paillier.Encryption(m1);
-        BigInteger em2 = paillier.Encryption(m2);
+        BigInteger em1 = paillier.encrypt(m1);
+        BigInteger em2 = paillier.encrypt(m2);
         /* printout encrypted text*/
         System.out.println(em1);
         System.out.println(em2);
         /* printout decrypted text */
-        System.out.println(paillier.Decrypt(em1).toString());
-        System.out.println(paillier.Decrypt(em2).toString());
+        System.out.println(paillier.decrypt(em1).toString());
+        System.out.println(paillier.decrypt(em2).toString());
 
         /* test homomorphic properties -> D(E(m1)*E(m2) mod n^2) = (m1 + m2) mod n */
         BigInteger product_em1em2 = em1.multiply(em2).mod(paillier.nsquare);
         BigInteger sum_m1m2 = m1.add(m2).mod(paillier.n);
         System.out.println("original sum: " + sum_m1m2.toString());
-        System.out.println("decrypted sum: " + paillier.Decrypt(product_em1em2).toString());
+        System.out.println("decrypted sum: " + paillier.decrypt(product_em1em2).toString());
 
         /* test homomorphic properties -> D(E(m1)^m2 mod n^2) = (m1*m2) mod n */
         BigInteger expo_em1m2 = em1.modPow(m2, paillier.nsquare);
         BigInteger prod_m1m2 = m1.multiply(m2).mod(paillier.n);
         System.out.println("original product: " + prod_m1m2.toString());
-        System.out.println("decrypted product: " + paillier.Decrypt(expo_em1m2).toString());
+        System.out.println("decrypted product: " + paillier.decrypt(expo_em1m2).toString());
         
         //System.out.println(BigIntegerUtility.PRIME_Q.modPow(paillier.n, paillier.nsquare));
 
         BigInteger c1 = new BigInteger("12345");
         BigInteger c2 = new BigInteger("2");
-        BigInteger[] coes1 = paillier.Decrypt2(c1);
-        BigInteger[] coes2 = paillier.Decrypt2(c2);
-        BigInteger c3 = paillier.Encrypt(coes1[0].add(coes2[0]), coes1[1].multiply(coes2[1]));
+        BigInteger[] coes1 = paillier.decrypt2(c1);
+        BigInteger[] coes2 = paillier.decrypt2(c2);
+        BigInteger c3 = paillier.encrypt(coes1[0].add(coes2[0]), coes1[1].multiply(coes2[1]));
         System.out.println(c3);
     }
 

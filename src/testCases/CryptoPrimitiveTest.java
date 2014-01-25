@@ -8,9 +8,12 @@ import io.IO;
 import java.math.BigInteger;
 import java.util.Random;
 
+import javax.crypto.Cipher;
+
 import crypto.AES;
 import crypto.Gfunction;
 import crypto.Hasher;
+import crypto.Paillier;
 import crypto.RSA;
 import timer.Timer;
 
@@ -86,6 +89,26 @@ public class CryptoPrimitiveTest {
 			mes = BigInteger.probablePrime(1024, new Random());
 		}
 //		System.out.println(mes);
+		timer.stop();
+		System.out.println("Time Costs: " + timer.timeElapseinMs() / times + "ms");
+		System.out.println("=====================================================");
+		
+		Paillier paillier = new Paillier();
+		BigInteger cipherPai = null;
+		System.out.println("=============== Paillier encryption ================");
+		timer.reset();
+		for (int i = 0; i < times; i ++) {
+			cipherPai = paillier.encrypt(mes);
+		}
+		timer.stop();
+		System.out.println("Time Costs: " + timer.timeElapseinMs() / times + "ms");
+		System.out.println("=====================================================");
+		
+		System.out.println("=============== Paillier decryption ================");
+		timer.reset();
+		for (int i = 0; i < times; i ++) {
+			mes = paillier.decrypt(cipherPai);
+		}
 		timer.stop();
 		System.out.println("Time Costs: " + timer.timeElapseinMs() / times + "ms");
 		System.out.println("=====================================================");
