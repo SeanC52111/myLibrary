@@ -20,6 +20,8 @@ import spatialindex.Region;
  */
 public class QuadTree {
 
+	private static long			G_ID		= 0;
+	private long				id 			= -1;
 	private int 				capacity 	= 4;
 	private Region 				boundary 	= null;
 	private ArrayList<Point> 	points		= null;
@@ -33,17 +35,36 @@ public class QuadTree {
 	 */
 	public QuadTree(int capacity, Region boundary) {
 		// TODO Auto-generated constructor stub
+		this.id			= G_ID ++;
 		this.capacity 	= capacity;
 		this.boundary 	= boundary;
 		this.points 	= new ArrayList<Point>();
 		this.values 	= new ArrayList<RW>();
 	}
 	
-	public boolean insert(Point p, RW value) {
+	/**
+	 * Get tree id.
+	 * @return
+	 */
+	public long getId() {
+		return id;
+	}
+	
+	/**
+	 * Insert a point also record the path.
+	 * @param p
+	 * @param value
+	 * @param path
+	 * @return
+	 */
+	public boolean insert(Point p, RW value, ArrayList<QuadTree> path) {
 		if (!boundary.contains(p)) {
 			return false;
 		}		
 		cnt ++;
+		if (path != null) {
+			path.add(this);
+		}
 		if (points != null && points.size() <= capacity) {			
 			points.add(p);
 			values.add(value);
@@ -60,7 +81,7 @@ public class QuadTree {
 				for (int j = 0; j < points.size(); j ++) {
 					boolean found = false;
 					for (int i = 0; i < dim; i ++) {
-						if (chTree[i].insert(points.get(j), values.get(j))) {
+						if (chTree[i].insert(points.get(j), values.get(j), path)) {
 							found = true;
 							break;
 						}
@@ -71,13 +92,23 @@ public class QuadTree {
 			} 
 			boolean found = false;
 			for (int i = 0; i < dim; i ++) {
-				if (chTree[i].insert(p, value)) {
+				if (chTree[i].insert(p, value, path)) {
 					found = true;
 					break;
 				}
 			}
 			return found;
 		}
+	}
+	
+	/**
+	 * Insert a point without path.
+	 * @param p
+	 * @param value
+	 * @return
+	 */
+	public boolean insert(Point p, RW value) {
+		return insert(p, value, null);
 	}
 	
 	public static Region[] subDivide(Region boundary) {
@@ -109,18 +140,15 @@ public class QuadTree {
 		return regions;
 	}
 	
-	/**
-	 * Implemented myself.
-	 * @param p
-	 * @param id
-	 * @return
-	 */
-	public boolean remove(Point p) {
+	public boolean remove(Point p, ArrayList<QuadTree> path) {
 		if (!boundary.contains(p)) {
 			return false;
 		}
 		
 		cnt --;
+		if (path != null) {
+			path.add(this);
+		}
 		if (points != null) {
 			for (int i = 0; i < points.size(); i ++) {
 				if (points.get(i).equals(p)) {
@@ -137,7 +165,7 @@ public class QuadTree {
 			
 			boolean suc = false;
 			for (int i = 0; i < dim; i ++) {
-				if (chTree[i].remove(p)) {
+				if (chTree[i].remove(p, path)) {
 					suc = true;
 					break;
 				}
@@ -149,16 +177,45 @@ public class QuadTree {
 				for (int i = 0; i < dim; i ++) {
 					points.addAll(chTree[i].points);
 					values.addAll(chTree[i].values);
-					chTree[i].clearPoints();
+					chTree[i].clear();
 					chTree[i] = null;
 				}
 				chTree = null;
 			}
-			
 			return suc;
 		}
 	}
 	
+	/**
+	 * Implemented myself.
+	 * @param p
+	 * @param id
+	 * @return
+	 */
+	public boolean remove(Point p) {
+		return remove(p, null);
+	}
+	
+	/**
+	 * Clear the tree;
+	 */
+	public void clear() {
+		id = -1;
+		boundary = null;
+		clearPoints();
+		if (chTree != null) {
+			for (int i = 0; i < dim; i ++) {
+				chTree[i].clear();
+				chTree[i] = null;
+			}
+			chTree = null;
+		}
+	}
+	
+	/**
+	 * Clear the points and values.
+	 * 
+	 * */
 	public void clearPoints() {
 		points = null;
 		values = null;
@@ -207,6 +264,8 @@ public class QuadTree {
 		StringBuffer indent = IO.getIndent(level);
 		sb.append(indent + "-------------------\n");
 		sb.append(indent); 
+		sb.append("@" + id + "\n");
+		sb.append(indent); 
 		sb.append(boundary + "\n");
 		if (points != null) {
 			sb.append(indent + "[");
@@ -244,6 +303,13 @@ public class QuadTree {
 	
 	public ArrayList<RW> getValues() {
 		return values;
+	}
+	
+	public RW getValue(int i) {
+		if (i >= values.size()) {
+			throw new IllegalStateException("The i is out of array.");
+		}
+		return values.get(i);
 	}
 	
 	public void setValue(ArrayList<RW> values) {

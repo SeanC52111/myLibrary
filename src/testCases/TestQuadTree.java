@@ -1,13 +1,11 @@
 package testCases;
 
-import static org.junit.Assert.*;
 import io.RW;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.util.ArrayList;
 
-import memoryindex.BinaryTree;
 import memoryindex.IQueryStrategyQT;
 import memoryindex.QuadTree;
 
@@ -30,6 +28,23 @@ public class TestQuadTree {
 	}
 
 	@Test
+	public void testInsertWithPath() {
+		QuadTree root = new QuadTree(4, new Region(new double[] {0, 0}, new double[] {16, 16}));
+		for (int i = 0; i < points.size(); i ++) {
+			ArrayList<QuadTree> path = new ArrayList<QuadTree>();
+			if (!root.insert(points.get(i), new Id(i), path)) {
+				System.out.println(i + " err!");
+			} else {
+				System.out.println(i + ": " + path.size());
+//				for (int j = 0; j < path.size(); j ++) {					
+//					System.out.println(path.get(j));
+//				}
+			}
+		}
+//		System.out.println(root);
+	}
+	
+	@Test
 	public void testRegionSubdivision() {
 		double[] lCoords = new double[]{1, 2}, hCoords = new double[]{3, 4};
 		Region region = new Region(lCoords, hCoords);
@@ -49,7 +64,7 @@ public class TestQuadTree {
 //				System.out.println(i + " inserted!");
 			}
 		}
-		System.out.println(root);
+//		System.out.println(root);
 	}
 	
 	@Test
