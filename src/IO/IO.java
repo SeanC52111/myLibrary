@@ -186,6 +186,25 @@ public class IO {
 		}
 	}
 	
+	public static void writeBoolean(DataOutputStream ds, boolean r) {
+		try {
+			ds.writeBoolean(r);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public static boolean readBoolean(DataInputStream ds) {
+		try {
+			return ds.readBoolean();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
 	public static void writeIntArrays(DataOutputStream ds, int[] a){
 		try {
 			ds.writeInt(a.length);

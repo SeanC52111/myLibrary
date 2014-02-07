@@ -50,6 +50,10 @@ public class QuadTree {
 		return id;
 	}
 	
+	public void setId(long id) {
+		this.id = id;
+	}
+	
 	/**
 	 * Insert a point also record the path.
 	 * @param p
@@ -301,6 +305,10 @@ public class QuadTree {
 		return chTree;
 	}
 	
+	public void setChTrees(QuadTree[] chTree) {
+		this.chTree = chTree;
+	}
+	
 	public ArrayList<RW> getValues() {
 		return values;
 	}
@@ -312,14 +320,21 @@ public class QuadTree {
 		return values.get(i);
 	}
 	
-	public void setValue(ArrayList<RW> values) {
+	public void setValues(ArrayList<RW> values) {
 		this.values = values;
+	}
+	
+	public void setValue(int i, RW value) {
+		this.values.set(i, value);
 	}
 	
 	public int getCnt() {
 		return cnt;
 	}
 	
+	public void setCnt(int cnt) {
+		this.cnt = cnt;
+	}
 	/**
 	 * @param args
 	 */
