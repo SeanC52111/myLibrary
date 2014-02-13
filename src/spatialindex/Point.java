@@ -29,10 +29,18 @@
 
 package spatialindex;
 
-public class Point implements IShape, Cloneable
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+
+import io.IO;
+import io.RW;
+
+public class Point implements IShape, Cloneable, RW
 {
 	public double[] m_pCoords = null;
 
+	public Point() {}
+	
 	public Point(double[] pCoords)
 	{
 		m_pCoords = new double[pCoords.length];
@@ -69,7 +77,7 @@ public class Point implements IShape, Cloneable
 	// Cloneable interface
 	//
 
-	public Object clone()
+	public IShape clone()
 	{
 		return new Point(m_pCoords);
 	}
@@ -159,5 +167,24 @@ public class Point implements IShape, Cloneable
 		}
 		sb.append(")");
 		return sb.toString();
+	}
+
+	@Override
+	public void read(DataInputStream ds) {
+		// TODO Auto-generated method stub
+		int len = IO.readInt(ds);
+		m_pCoords = new double[len];
+		for (int i = 0; i < len; i ++) {
+			m_pCoords[i] = IO.readDouble(ds);
+		}
+	}
+
+	@Override
+	public void write(DataOutputStream ds) {
+		// TODO Auto-generated method stub
+		IO.writeInt(ds, m_pCoords.length);
+		for (int i = 0; i < m_pCoords.length; i++) {
+			IO.writeDouble(ds, m_pCoords[i]);
+		}
 	}
 }

@@ -74,10 +74,25 @@ public class RTree implements ISpatialIndex
 
 	Statistics m_stats;
 
+	Records records  = new Records();
+	boolean recordStatus = false;
+	
 	ArrayList m_writeNodeCommands = new ArrayList();
 	ArrayList m_readNodeCommands = new ArrayList();
 	ArrayList m_deleteNodeCommands = new ArrayList();
 
+	public Records getRecords() {
+		return records;
+	} 
+	
+	public void setRecordStatus(boolean status) {
+		recordStatus = status;
+	}
+	
+	public boolean getRecordStatus() {
+		return recordStatus;
+	}
+	
 	public int getRootId() {
 		return m_rootID;
 	}
@@ -1024,6 +1039,10 @@ public class RTree implements ISpatialIndex
 
 	protected int writeNode(Node n) throws IllegalStateException
 	{
+		if (recordStatus) {
+			records.add(n.getIdentifier());
+		}
+		
 		byte[] buffer = null;
 
 		try

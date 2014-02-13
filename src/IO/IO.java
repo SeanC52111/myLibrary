@@ -142,6 +142,16 @@ public class IO {
     	return 0;
     }
     
+    public static double readDouble(DataInputStream ds) {
+    	try {
+			return ds.readDouble();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	return 0;
+    }
+    
     public static long readLong(DataInputStream ds) {
     	try {
 			return ds.readLong();
@@ -180,6 +190,15 @@ public class IO {
 	public static void writeLong(DataOutputStream ds, long a) {
 		try {
 			ds.writeLong(a);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public static void writeDouble(DataOutputStream ds, double a) {
+		try {
+			ds.writeDouble(a);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

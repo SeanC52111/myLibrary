@@ -29,7 +29,13 @@
 
 package spatialindex;
 
-public class Region implements IShape
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+
+import io.IO;
+import io.RW;
+
+public class Region implements IShape, RW
 {
 	public double[] m_pLow = null;
 	public double[] m_pHigh = null;
@@ -90,7 +96,7 @@ public class Region implements IShape
 	// Cloneable interface
 	//
 
-	public Object clone()
+	public IShape clone()
 	{
 		return new Region(m_pLow, m_pHigh);
 	}
@@ -385,5 +391,31 @@ public class Region implements IShape
 		for (int cIndex = 0; cIndex < m_pHigh.length; cIndex++) s += m_pHigh[cIndex] + " ";
 
 		return s;
+	}
+
+	@Override
+	public void read(DataInputStream ds) {
+		// TODO Auto-generated method stub
+		int len = IO.readInt(ds);
+		m_pLow = new double[len];
+		for (int i = 0; i < len; i ++) {
+			m_pLow[i] = IO.readDouble(ds);
+		}
+		m_pHigh = new double[len];
+		for (int i = 0; i < len; i ++) {
+			m_pHigh[i] = IO.readDouble(ds);
+		}
+	}
+
+	@Override
+	public void write(DataOutputStream ds) {
+		// TODO Auto-generated method stub
+		IO.writeInt(ds, m_pLow.length);
+		for (int i = 0; i  < m_pLow.length; i ++) {
+			IO.writeDouble(ds, m_pLow[i]);
+		}
+		for (int i = 0; i  < m_pHigh.length; i ++) {
+			IO.writeDouble(ds, m_pHigh[i]);
+		}
 	}
 }
