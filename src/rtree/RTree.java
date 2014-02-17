@@ -1039,9 +1039,6 @@ public class RTree implements ISpatialIndex
 
 	protected int writeNode(Node n) throws IllegalStateException
 	{
-		if (recordStatus) {
-			records.add(n.getIdentifier());
-		}
 		
 		byte[] buffer = null;
 
@@ -1069,12 +1066,17 @@ public class RTree implements ISpatialIndex
 			throw new IllegalStateException("writeNode failed with InvalidPageException");
 		}
 
+		
 		if (n.m_identifier < 0)
 		{
 			n.m_identifier = page;
 			m_stats.m_nodes++;
 			int i = ((Integer) m_stats.m_nodesInLevel.get(n.m_level)).intValue();
 			m_stats.m_nodesInLevel.set(n.m_level, new Integer(i + 1));
+		}
+		
+		if (recordStatus) {
+			records.add(n.getIdentifier());
 		}
 
 		m_stats.m_writes++;
