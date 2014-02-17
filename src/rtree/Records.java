@@ -26,9 +26,10 @@ public class Records {
 		nodes.clear();
 	}
 	
-	public ArrayList<Integer> getDataIds () {
+	public ArrayList<Integer> getDataIds (RTree tree) {
 		visited = new HashSet<Integer>();
 		RetrieveStrategy qs = new RetrieveStrategy();
+		tree.queryStrategy(tree.getRootId(), qs);
 		return qs.getIds();
 	}
 	
