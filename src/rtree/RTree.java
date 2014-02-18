@@ -1089,6 +1089,7 @@ public class RTree implements ISpatialIndex
 		return page;
 	}
 
+	
 	public Node readNode(int id)
 	{
 		byte[] buffer;

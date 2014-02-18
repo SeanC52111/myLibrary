@@ -72,4 +72,5 @@ public class RandomEvictionsBuffer extends Buffer
 
 		m_buffer.remove(new Integer(id));
 	}
+
 } // RandomEvictionsBuffer

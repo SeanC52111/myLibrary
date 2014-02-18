@@ -35,7 +35,7 @@ public class MemoryStorageManager implements IStorageManager
 {
 	private ArrayList m_buffer = new ArrayList();
 	private Stack m_emptyPages = new Stack();
-
+	
 	public void flush()
 	{
 	}
@@ -98,6 +98,7 @@ public class MemoryStorageManager implements IStorageManager
 		}
 
 		m_buffer.set(id, null);
+		
 		m_emptyPages.push(new Integer(id));
 	}
 
@@ -111,4 +112,6 @@ public class MemoryStorageManager implements IStorageManager
 			System.arraycopy(d, 0, m_pData, 0, d.length);
 		}
 	} // Entry
+
+
 }
