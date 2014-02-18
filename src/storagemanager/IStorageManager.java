@@ -37,4 +37,5 @@ public interface IStorageManager
 	public byte[] loadByteArray(final int id);
 	public int storeByteArray(final int id, final byte[] data);
 	public void deleteByteArray(final int id);
+	public boolean isValid(final int id);
 } // IStorageManager

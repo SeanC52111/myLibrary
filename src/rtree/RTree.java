@@ -101,6 +101,10 @@ public class RTree implements ISpatialIndex
 		return readNode(m_rootID);
 	}
 	
+	public boolean isNodeValid(final int id) {
+		return m_pStorageManager.isValid(id);
+	}
+	
 	/**
 	 * create a Rtree with default page size 4096, and this a disk based Rtree.
 	 * The fill factor is 0.7.

@@ -73,4 +73,10 @@ public class RandomEvictionsBuffer extends Buffer
 		m_buffer.remove(new Integer(id));
 	}
 
+	@Override
+	public boolean isValid(int id) {
+		// TODO Auto-generated method stub
+		return m_storageManager.isValid(id);
+	}
+
 } // RandomEvictionsBuffer

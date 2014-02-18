@@ -113,5 +113,11 @@ public class MemoryStorageManager implements IStorageManager
 		}
 	} // Entry
 
+	@Override
+	public boolean isValid(int id) {
+		// TODO Auto-generated method stub
+		return m_buffer.size() > id && m_buffer.get(id) != null;
+	}
+
 
 }

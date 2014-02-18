@@ -402,6 +402,10 @@ public class DiskStorageManager implements IStorageManager
 		ArrayList m_pages = new ArrayList();
 	}
 
-	
+	@Override
+	public boolean isValid(int id) {
+		// TODO Auto-generated method stub
+		return m_pageIndex.containsKey(id);
+	}
 	
 }
