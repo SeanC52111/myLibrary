@@ -25,12 +25,7 @@ import math.MathUtility;
 /**
  * @author chenqian
  *
- *	This file is for showing data visually. 
- *	Function loadMap() loads the map of nodes and roads.
- *	Function loadData() is to load trajectory.
- *	The format for the trajectory is (timestamp, vid, lat, lng)
- *	Function loadRsu() is to load Rsus as the name shows.
- *	The format of the data refers to the one in Converter.java.
+ *	Refer the example in main.
  *
  */
 public class ShowData extends JFrame{

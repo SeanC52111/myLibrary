@@ -9,6 +9,7 @@ import io.RW;
 import java.util.ArrayList;
 
 import math.MathPoint;
+import spatialindex.IShape;
 import spatialindex.Point;
 import spatialindex.Region;
 
@@ -130,6 +131,7 @@ public class QuadTree {
 		
 		int tot = 1 << mpL.getDim();
 		Region[] regions = new Region[tot];
+		MathPoint epsPoint = MathPoint.getEpsPoint((int) boundary.getDimension());
 		for (int i = 0; i < tot; i ++) {
 			MathPoint mpS = new MathPoint(mpC);
 			for (int j = 0; j < mpL.getDim(); j ++) {
@@ -137,8 +139,8 @@ public class QuadTree {
 					mpS.setCoord(j, 0);
 				}
 			}
-			MathPoint l = mpL.add(mpS);
-			MathPoint h = l.add(mpC);
+			MathPoint l = mpL.add(mpS).minus(epsPoint);
+			MathPoint h = l.add(mpC).minus(epsPoint);
 			regions[i] = new Region(l.getCoords(), h.getCoords());
 		}
 		return regions;

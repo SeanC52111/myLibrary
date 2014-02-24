@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Point;
 import java.util.ArrayList;
 
-import com.sun.org.apache.xml.internal.security.Init;
 
 public class Data {
 	/**
@@ -25,6 +24,18 @@ public class Data {
 		}
 		for (double[] point : points) {
 			addPoint(Data.parseFromLatLng(point[0], point[1]));
+		}
+		this.color = color;
+		isInit = true;
+		setPointType();
+	}
+	
+	public Data(spatialindex.Point[] points, Color color) {
+		for (spatialindex.Point point : points) {
+			Data.updateMargin(point.getCoord(0), point.getCoord(1));
+		}
+		for (spatialindex.Point point : points) {
+			addPoint(Data.parseFromLatLng(point.getCoord(0), point.getCoord(1)));
 		}
 		this.color = color;
 		isInit = true;

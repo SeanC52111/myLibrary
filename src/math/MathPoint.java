@@ -199,4 +199,17 @@ public class MathPoint {
 		}
 		return true;
 	}
+	
+	/**
+	 * Get a point whose coordinates are epsilon.
+	 * @param dim
+	 * @return
+	 */
+	public static MathPoint getEpsPoint(int dim) {
+		double[] coords = new double[dim];
+		for (int i = 0; i < dim; i ++) {
+			coords[i] = MathUtility.eps;
+		}
+		return new MathPoint(coords);
+	}
 }
