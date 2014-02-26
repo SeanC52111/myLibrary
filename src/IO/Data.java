@@ -24,7 +24,7 @@ public class Data implements RW {
 
 	public void write(DataOutputStream ds) {
 		// TODO Auto-generated method stub
-//		System.out.println("write call me at Data");
+//		System.out.println("write call me at DrawCollection");
 		
 	}
 	
@@ -33,7 +33,7 @@ public class Data implements RW {
 	}
 	
 	public String toString() {
-//		System.out.println("Call me at Data");
+//		System.out.println("Call me at DrawCollection");
 		return data;
 	}
 

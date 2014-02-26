@@ -394,7 +394,7 @@ public abstract class Node implements INode
 		boolean[] mask = new boolean[m_capacity + 1];
 		for (cChild = 0; cChild < m_capacity + 1; cChild++) mask[cChild] = false;
 
-		// insert new data in the node for easier manipulation. Data arrays are always
+		// insert new data in the node for easier manipulation. DrawCollection arrays are always
 		// by one larger than node capacity.
 		m_pDataLength[m_capacity] = (pData != null) ? pData.length : 0;
 		m_pData[m_capacity] = pData;

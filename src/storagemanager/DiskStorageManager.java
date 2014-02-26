@@ -79,7 +79,7 @@ public class DiskStorageManager implements IStorageManager
 				if (b == false) throw new IOException("Index file cannot be opened.");
 
 				b = dataFile.createNewFile();
-				if (b == false) throw new IOException("Data file cannot be opened.");
+				if (b == false) throw new IOException("DrawCollection file cannot be opened.");
 			}
 
 			m_indexFile = new RandomAccessFile(indexFile, "rw");

@@ -2,20 +2,13 @@ package graphics;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Graphics;
-import java.awt.Point;
 import java.awt.Toolkit;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Scanner;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import math.MathUtility;
+import spatialindex.IShape;
+import spatialindex.Region;
 
 
 /**
@@ -40,18 +33,21 @@ public class ShowData extends JFrame{
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		
-		Data data = new Data(new double[][]{
-				{0, 0}, 
-				{0, 1},
-				{1, 0},
-				{1, 1},
-				{0, 0},
-				{0.5, 0.5},
-				{0.8, 0.2}
-				}, Color.BLACK);
-		data.setLineType();
-		ShowData showData = new ShowData(new Data[]{data});
+
+
+		DrawCollection data = new DrawCollection(new Data[]{
+                new Data((IShape)new spatialindex.Point(new double[] {0, 1}), Color.BLACK, Data.DrawType.Point),
+                new Data((IShape)new spatialindex.Point(new double[] {0, 0}), Color.BLACK, Data.DrawType.Line),
+                new Data((IShape)new spatialindex.Point(new double[] {1, 0}), Color.BLACK, Data.DrawType.Line),
+                new Data((IShape)new spatialindex.Point(new double[] {1, 1}), Color.BLACK, Data.DrawType.Line),
+                new Data((IShape)new spatialindex.Point(new double[] {0.5, 0.5}), Color.BLACK, Data.DrawType.Line),
+                new Data((IShape)new spatialindex.Point(new double[] {0.8, 0.2}), Color.BLACK, Data.DrawType.Line),
+                new Data((IShape)new Region(new spatialindex.Point(new double[] {0.2, 0.2}),
+                        new spatialindex.Point(new double[] {0.3, 0.3})), Color.RED, Data.DrawType.Region),
+                new Data((IShape)new Region(new spatialindex.Point(new double[] {0.5, 0.6}),
+                        new spatialindex.Point(new double[] {0.6, 0.7})), Color.RED, Data.DrawType.Region),
+				});
+        ShowData showData = new ShowData(data);
 		ShowData.draw(showData);
 	}
 	
@@ -72,40 +68,42 @@ public class ShowData extends JFrame{
 		}
 	}
 	
-	public ShowData(Data[] datas){
+	public ShowData(DrawCollection drawCollection){
 		setSize(DEFAULT_WIDTH + 8, DEFAULT_HEIGHT + 30);
 		setLocation(DEFAULT_L_X, DEFAULT_L_Y);
-		add(new DataPanel(datas));
+		add(new DataPanel(drawCollection));
 	}
 	
 	class DataPanel extends JPanel{
-		ArrayList<Data> datas = new ArrayList<Data>();
-		DataPanel(Data[] datas){
-			for (Data data : datas) {
-				this.datas.add(data);
-			}
-		}
-		
-		public void paintComponent(Graphics g){
-			super.paintComponent(g);
-			for (Data data : datas) {
-				 g.setColor(data.color);
-				 if (data.isPointType()) {
-					 for (int j = 0; j < data.points.size(); j ++) {
-						 Point p = data.points.get(j);
-						g.drawRect(p.x, p.y, 5, 5); 
-					 }
-				 }
-				 if (data.isLineType()) {
-					 for (int j = 0; j < data.points.size() - 1; j ++) {
-						 Point p = data.points.get(j);
-						 Point q = data.points.get(j + 1);
-						 g.drawLine(p.x, p.y, q.x, q.y);
-					 }
-				 }
-			}
-			Toolkit.getDefaultToolkit().sync();
-			g.dispose();
-		}
-	}
+        DrawCollection drawCollection;
+
+        DataPanel(DrawCollection drawCollection) {
+            this.drawCollection = drawCollection;
+        }
+
+        public void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            for (int j = 0; j < drawCollection.getSize(); j ++) {
+                Data data = drawCollection.getData(j);
+                g.setColor(data.getColor());
+                if (data.getDrawType() == Data.DrawType.Point) {
+                    spatialindex.Point p = (spatialindex.Point) data.getShape();
+                    g.drawRect((int) p.getCoord(0), (int) p.getCoord(1), 5, 5);
+                } else if (data.getDrawType() == Data.DrawType.Line) {
+                    spatialindex.Point p = (spatialindex.Point) data.getShape();
+                    Data dataq = drawCollection.getData(j - 1);
+                    spatialindex.Point q = (spatialindex.Point) dataq.getShape();
+                    g.drawLine((int) p.getCoord(0), (int) p.getCoord(1), (int) q.getCoord(0), (int) q.getCoord(1));
+                } else if (data.getDrawType() == Data.DrawType.Region) {
+                    Region region = (Region) data.getShape();
+                    g.drawRect((int) region.getLow(0), (int) region.getLow(1),
+                            (int) (region.getHigh(0) - region.getLow(0)), (int) (region.getHigh(1) - region.getLow(1)));
+                } else {
+                    System.out.println("this type is not existed");
+                }
+            }
+            Toolkit.getDefaultToolkit().sync();
+            g.dispose();
+        }
+    }
 }
