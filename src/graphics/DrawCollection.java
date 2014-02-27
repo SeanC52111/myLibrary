@@ -22,6 +22,8 @@ public class DrawCollection {
     public DrawCollection(Data[] datas) {
         for (Data data : datas) {
             DrawCollection.updateMargin(data.getShape());
+        }
+        for (Data data : datas) {
             this.datas.add(new Data(DrawCollection.parseShape(data.getShape()), data.getColor(), data.getDrawType()));
         }
         isInit = true;
