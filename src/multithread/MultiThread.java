@@ -3,6 +3,8 @@
  */
 package multithread;
 
+import java.util.ArrayList;
+
 
 /**
  * @author chenqian
@@ -79,6 +81,11 @@ public class MultiThread {
 		this.threadNum = threadNum;
 	}
 
+	public MultiThread(ArrayList<Runnable> tasks, int threadNum) {
+		this.tasks = tasks.toArray(new Runnable[0]);
+		this.threadNum = threadNum;
+	}
+	
 	public MultiThread(Runnable[] tasks, int threadNum) {
 		// TODO Auto-generated constructor stub
 		this.tasks = tasks;
