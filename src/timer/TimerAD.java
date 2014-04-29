@@ -1,10 +1,11 @@
 package timer;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 
 public class TimerAD {
 
-	private long			start, end;
+	private long			start, end, elapsed;
 	private ArrayList<Long>	laps;
 	private final double	USSCALE	= 1000.0;
 	private final double	MSSCALE	= 1000000.0;
@@ -18,22 +19,43 @@ public class TimerAD {
 	 * reset timer
 	 */
 	public void reset() {
-		start = System.nanoTime();
+		resume();
 		end = -1;
+		elapsed = 0;
+	}
+	
+	/**
+	 * Pause the timer
+	 */
+	public void pause() {
+		stop();
+		elapsed += end - start;
+		resume();
+	}
+	
+	/**
+	 * 
+	 */
+	public void resume() {
+		start = System.nanoTime();
 	}
 
 	public void stop() {
 		end = System.nanoTime();
 	}
 
+	public long getTotal() {
+		if (end == -1)
+			stop();
+		return (elapsed + end - start);
+	}
+	
 	/**
 	 * get time elapsed in ms.
 	 * 
 	 * */
 	public double timeElapseinMs() {
-		if (end == -1)
-			stop();
-		return (end - start) / MSSCALE;
+		return getTotal() / MSSCALE;
 	}
 
 	/**
@@ -41,7 +63,7 @@ public class TimerAD {
 	 * 
 	 * */
 	public double timeElapseinS() {
-		return (end - start) / SSCALE;
+		return getTotal() / SSCALE;
 	}
 
 	/**
@@ -50,7 +72,7 @@ public class TimerAD {
 	 * @return
 	 */
 	public double timeElapseinUs() {
-		return (end - start) / USSCALE;
+		return getTotal() / USSCALE;
 	}
 
 	/**
@@ -59,7 +81,7 @@ public class TimerAD {
 	 * @return
 	 */
 	public double timeElapseinNs() {
-		return (end - start) * 1.0;
+		return getTotal() * 1.0;
 	}
 
 	/**
@@ -95,13 +117,22 @@ public class TimerAD {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		Timer timer = new Timer();
+		TimerAD timer = new TimerAD(), timer2 = new TimerAD();
 		timer.reset();
-		for (int ans = 0, i = 0; i < 1000000; i++) {
-			ans += i;
+		timer2.reset();
+		BigInteger ans = new BigInteger("2");
+		BigInteger mod = BigInteger.ONE.shiftLeft(127).subtract(ans);
+		for (int i = 0; i < 10000; i++) {
+			for (int j = 0; j < 1000; j++) {
+				ans = ans.multiply(ans).mod(mod);
+			}
 		}
+		timer2.pause();
+//		timer2.resume();
 		timer.stop();
+		timer2.stop();
 		System.out.println("Time elapse: " + timer.timeElapseinMs() + "ms");
+		System.out.println("Time elapse: " + timer2.timeElapseinMs() + "ms");
 	}
 
 }
