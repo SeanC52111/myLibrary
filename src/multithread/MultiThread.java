@@ -3,8 +3,6 @@
  */
 package multithread;
 
-import java.io.IOException;
-import java.util.ArrayList;
 
 /**
  * @author chenqian
@@ -12,12 +10,12 @@ import java.util.ArrayList;
  */
 public class MultiThread {
 
-	boolean 		verbose			= false;
-	int				mod				= 1;
-	final int[] 	lock 			= new int[1];
-	int 			threadNum 		= 2;
-	boolean[] 		threadStatus 	= null;
-	Task[] 			tasks 			= null;
+	boolean		verbose			= false;
+	int			mod				= 1;
+	final int[]	lock			= new int[1];
+	int			threadNum		= 2;
+	boolean[]	threadStatus	= null;
+	Runnable[]	tasks			= null;
 	
 	public void run() {
 		lock[0] = 0;
@@ -81,13 +79,13 @@ public class MultiThread {
 		this.threadNum = threadNum;
 	}
 
-	public MultiThread(Task[] tasks, int threadNum) {
+	public MultiThread(Runnable[] tasks, int threadNum) {
 		// TODO Auto-generated constructor stub
 		this.tasks = tasks;
 		this.threadNum = threadNum;
 	}
 	
-	public MultiThread(Task[] tasks, int threadNum, boolean verbose, int mod) {
+	public MultiThread(Runnable[] tasks, int threadNum, boolean verbose, int mod) {
 		this.tasks 		= tasks;
 		this.threadNum 	= threadNum;
 		this.verbose	= verbose;
