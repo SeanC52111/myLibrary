@@ -8,14 +8,11 @@ import io.IO;
 import java.math.BigInteger;
 import java.util.Random;
 
-import javax.crypto.Cipher;
-
+import timer.Timer;
 import crypto.AES;
-import crypto.Gfunction;
 import crypto.Hasher;
 import crypto.Paillier;
 import crypto.RSA;
-import timer.Timer;
 
 /**
  * @author chenqian
@@ -36,7 +33,7 @@ public class CryptoPrimitiveTest {
 		System.out.println("Time Costs: " + timer.timeElapseinMs() / times + "ms");
 		System.out.println("=====================================================");
 		
-		times = 1000;
+		times = 10000;
 		BigInteger p = BigInteger.probablePrime(1024, new Random());
 		BigInteger phip = p.subtract(BigInteger.ONE), x = BigInteger.ONE;
 		System.out.println("====================== g^2^1024 =======================");

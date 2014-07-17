@@ -7,6 +7,7 @@ import java.io.DataOutputStream;
 import java.util.ArrayList;
 
 import memoryindex.IQueryStrategyQT;
+import memoryindex.IVisitorQT;
 import memoryindex.QuadTree;
 
 import org.junit.BeforeClass;
@@ -101,6 +102,31 @@ public class TestQuadTree {
 		for (int i = 0; i < res.size(); i ++) {
 			System.out.println(((Id)res.get(i)).getId());
 		}
+	}
+	
+	@Test
+	public void testKNN() {
+		QuadTree root = new QuadTree(4, new Region(new double[] {0, 0}, new double[] {16, 16}));
+		for (int i = 0; i < points.size(); i ++) {			
+			if (!root.insert(points.get(i), new Id(i))) {
+				System.out.println(i + " err!");
+			} else {
+//				System.out.println(i + " inserted!");
+			}
+		}
+		Point query = new Point(new double[] {8, 8});
+		root.nearestNeighborQuery(3, query, new NNVisitor());
+		System.out.println("----");
+		root.nearestNeighborQuery(5, query, new NNVisitor());
+	}
+	
+	class NNVisitor implements IVisitorQT {
+
+		@Override
+		public void visitPoint(Point p) {
+			System.out.println(p);
+		}
+		
 	}
 	
 	class RangeQueryStrategy implements IQueryStrategyQT {

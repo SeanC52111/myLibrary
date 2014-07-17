@@ -7,6 +7,7 @@ import io.IO;
 import io.RW;
 
 import java.util.ArrayList;
+import java.util.PriorityQueue;
 
 import math.MathPoint;
 import spatialindex.IShape;
@@ -337,6 +338,61 @@ public class QuadTree {
 	public void setCnt(int cnt) {
 		this.cnt = cnt;
 	}
+	
+	public void nearestNeighborQuery(int k, final IShape query, final IVisitorQT v) {
+		PriorityQueue<NNEntry> queue = new PriorityQueue<NNEntry>();
+		queue.add(new NNEntry(this, query));
+		
+		int count = 0;
+		double knearest = 0.0;
+		
+		while (!queue.isEmpty()) {
+			NNEntry first = queue.poll();
+			
+			if (first.tree != null) {
+				QuadTree tree = first.tree;
+				if (tree.chTree == null) { // leaf
+					for (int i = 0; i < tree.points.size(); ++i) {
+						queue.add(new NNEntry(tree.points.get(i), query));
+					}
+				} else {
+					for (int i = 0; i < tree.chTree.length; ++i) {
+						queue.add(new NNEntry(tree.chTree[i], query));
+					}
+				}
+			} else {
+				if (count >= k && first.minDist > knearest) break;
+				
+				v.visitPoint(first.point);
+				count++;
+				knearest = first.minDist;
+			}
+		}
+	}
+	
+	class NNEntry implements Comparable<NNEntry>{
+		QuadTree tree = null;
+		Point point = null;
+		double minDist = 0;
+		
+		public NNEntry(QuadTree _tree, IShape query) {
+			tree = _tree;
+			minDist = query.getMinimumDistance(tree.getBoundary());
+		}
+		
+		public NNEntry(Point _point, IShape query) {
+			point = _point;
+			minDist = query.getMinimumDistance(point);
+		}
+
+		@Override
+		public int compareTo(NNEntry o) {
+			if (minDist < o.minDist) return -1;
+			else if (minDist > o.minDist) return 1;
+			else return 0;
+		}
+	}
+	
 	/**
 	 * @param args
 	 */
