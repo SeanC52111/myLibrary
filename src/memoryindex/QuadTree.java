@@ -295,6 +295,10 @@ public class QuadTree {
 		return sb.toString();
 	}
 	
+	public QuadTree getChTree(int i) {
+		return chTree[i];
+	}
+	
 	public QuadTree[] getChTrees() {
 		return chTree;
 	}
