@@ -3,7 +3,6 @@
  */
 package memoryindex;
 
-import spatialindex.Point;
 
 /**
  * @author chenqian
@@ -11,7 +10,5 @@ import spatialindex.Point;
  */
 public interface IVisitorQT {
 
-	public void visitPoint(final Point p);
-//	public void visitData(final RW d);
-
+	public void visitEntry(final QuadEntry p);
 }

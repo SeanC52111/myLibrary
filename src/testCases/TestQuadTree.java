@@ -1,13 +1,10 @@
 package testCases;
 
-import io.RW;
-
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.util.ArrayList;
 
 import memoryindex.IQueryStrategyQT;
 import memoryindex.IVisitorQT;
+import memoryindex.QuadEntry;
 import memoryindex.QuadTree;
 
 import org.junit.BeforeClass;
@@ -18,22 +15,22 @@ import spatialindex.Region;
 
 public class TestQuadTree {
 
-	static ArrayList<Point> points = new ArrayList<Point>();
+	static ArrayList<QuadEntry> entries = new ArrayList<QuadEntry>();
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		int num = 16;
 		for (int i = 0; i < num; i ++) {
-			points.add(new Point(new double[]{i, i}));
+			entries.add(new QuadEntry(i, new Point(new double[]{i, i}), null));
 		}
 	}
 
 	@Test
 	public void testInsertWithPath() {
 		QuadTree root = new QuadTree(4, new Region(new double[] {0, 0}, new double[] {16, 16}));
-		for (int i = 0; i < points.size(); i ++) {
+		for (int i = 0; i < entries.size(); i ++) {
 			ArrayList<QuadTree> path = new ArrayList<QuadTree>();
-			if (!root.insert(points.get(i), new Id(i), path)) {
+			if (!root.insert(entries.get(i), path)) {
 				System.out.println(i + " err!");
 			} else {
 				System.out.println(i + ": " + path.size());
@@ -58,8 +55,8 @@ public class TestQuadTree {
 	@Test
 	public void testInsert() {
 		QuadTree root = new QuadTree(4, new Region(new double[] {0, 0}, new double[] {16, 16}));
-		for (int i = 0; i < points.size(); i ++) {			
-			if (!root.insert(points.get(i), new Id(i))) {
+		for (int i = 0; i < entries.size(); i ++) {			
+			if (!root.insert(entries.get(i))) {
 				System.out.println(i + " err!");
 			} else {
 //				System.out.println(i + " inserted!");
@@ -71,17 +68,17 @@ public class TestQuadTree {
 	@Test
 	public void testRemove() {
 		QuadTree root = new QuadTree(4, new Region(new double[] {0, 0}, new double[] {16, 16}));
-		for (int i = 0; i < points.size(); i ++) {			
-			if (!root.insert(points.get(i), new Id(i))) {
+		for (int i = 0; i < entries.size(); i ++) {			
+			if (!root.insert(entries.get(i))) {
 				System.out.println(i + " err!");
 			}
 		}
-		root.remove(points.get(6));
-		root.remove(points.get(5));
-		root.remove(points.get(4));
-		root.remove(points.get(3));
-		root.remove(points.get(2));
-		root.remove(points.get(1));
+		root.remove(entries.get(6));
+		root.remove(entries.get(5));
+		root.remove(entries.get(4));
+		root.remove(entries.get(3));
+		root.remove(entries.get(2));
+		root.remove(entries.get(1));
 //		root.insert(2, points.get(2));
 //		System.out.println(root);
 	}
@@ -89,26 +86,26 @@ public class TestQuadTree {
 	@Test 
 	public void testRange() {
 		QuadTree root = new QuadTree(4, new Region(new double[] {0, 0}, new double[] {16, 16}));
-		for (int i = 0; i < points.size(); i ++) {			
-			if (!root.insert(points.get(i), new Id(i))) {
+		for (int i = 0; i < entries.size(); i ++) {			
+			if (!root.insert(entries.get(i))) {
 				System.out.println(i + " err!");
 			} else {
 //				System.out.println(i + " inserted!");
 			}
 		}
-		RangeQueryStrategy qs = new RangeQueryStrategy(new Region(points.get(2), points.get(5)));
+		RangeQueryStrategy qs = new RangeQueryStrategy(new Region((Point)entries.get(2).getShape(), (Point)entries.get(5).getShape()));
 		QuadTree.queryStrategy(root, qs);
-		ArrayList<RW> res = qs.getResult();
+		ArrayList<Integer> res = qs.getResult();
 		for (int i = 0; i < res.size(); i ++) {
-			System.out.println(((Id)res.get(i)).getId());
+			System.out.println(res.get(i));
 		}
 	}
 	
 	@Test
 	public void testKNN() {
 		QuadTree root = new QuadTree(4, new Region(new double[] {0, 0}, new double[] {16, 16}));
-		for (int i = 0; i < points.size(); i ++) {			
-			if (!root.insert(points.get(i), new Id(i))) {
+		for (int i = 0; i < entries.size(); i ++) {			
+			if (!root.insert(entries.get(i))) {
 				System.out.println(i + " err!");
 			} else {
 //				System.out.println(i + " inserted!");
@@ -120,11 +117,24 @@ public class TestQuadTree {
 		root.nearestNeighborQuery(5, query, new NNVisitor());
 	}
 	
+	@Test
+	public void testCount() {
+		QuadTree root = new QuadTree(4, new Region(new double[] {0, 0}, new double[] {16, 16}));
+		for (int i = 0; i < entries.size(); i ++) {			
+			if (!root.insert(entries.get(i))) {
+				System.out.println(i + " err!");
+			} else {
+//				System.out.println(i + " inserted!");
+			}
+		}
+		System.out.println(root.checkCount());
+	}
+	
 	class NNVisitor implements IVisitorQT {
 
 		@Override
-		public void visitPoint(Point p) {
-			System.out.println(p);
+		public void visitEntry(QuadEntry entry) {
+			System.out.println(entry.getShape());
 		}
 		
 	}
@@ -132,7 +142,7 @@ public class TestQuadTree {
 	class RangeQueryStrategy implements IQueryStrategyQT {
 
 		private ArrayList<QuadTree> toVisit = new ArrayList<QuadTree>();
-		private ArrayList<RW> 	results = new ArrayList<RW>();
+		private ArrayList<Integer> 	results = new ArrayList<Integer>();
 		private Region query = null;
 		
 		
@@ -141,7 +151,7 @@ public class TestQuadTree {
 			this.query = query;
 		}
 
-		public ArrayList<RW> getResult() {
+		public ArrayList<Integer> getResult() {
 			return results;
 		}
 
@@ -150,13 +160,12 @@ public class TestQuadTree {
 				boolean[] hasNext) {
 			// TODO Auto-generated method stub
 		
-			ArrayList<Point> points = n.getPoints();
-			if (points != null) {
-				ArrayList<RW> ids = n.getValues();
-				for (int i = 0; i < points.size(); i ++) {
-					Point p = points.get(i);
-					if (query.contains(p)) {
-						results.add(ids.get(i));
+			ArrayList<QuadEntry> entries = n.getEntries();
+			if (entries != null) {
+				for (int i = 0; i < entries.size(); i ++) {
+					QuadEntry entry = entries.get(i);
+					if (query.contains(entry.getShape())) {
+						results.add(entry.getId());
 					}
 				}
 			} else {
@@ -176,29 +185,4 @@ public class TestQuadTree {
 			}
 		}
 	}
-	
-	class Id implements RW {
-		int id;
-
-		public Id(int id) {
-			this.id = id;
-		}
-		
-		@Override
-		public void read(DataInputStream ds) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void write(DataOutputStream ds) {
-			// TODO Auto-generated method stub
-			
-		}
-		
-		public int getId() {
-			return id;
-		}
-	}
-
 }

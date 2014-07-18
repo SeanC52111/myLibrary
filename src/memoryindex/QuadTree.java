@@ -4,14 +4,12 @@
 package memoryindex;
 
 import io.IO;
-import io.RW;
 
 import java.util.ArrayList;
 import java.util.PriorityQueue;
 
 import math.MathPoint;
 import spatialindex.IShape;
-import spatialindex.Point;
 import spatialindex.Region;
 
 /**
@@ -22,26 +20,24 @@ import spatialindex.Region;
  */
 public class QuadTree {
 
-	private static long			G_ID		= 0;
-	private long				id 			= -1;
-	private int 				capacity 	= 4;
-	private Region 				boundary 	= null;
-	private ArrayList<Point> 	points		= null;
-	private ArrayList<RW>		values 		= null;
-	private QuadTree[] 			chTree 		= null;
-	private int					dim			= 4;
-	private int 				cnt			= 0;
+	private static long				G_ID		= 0;
+	private long					id			= -1;
+	private int						capacity	= 4;
+	private Region					boundary	= null;
+	private ArrayList<QuadEntry>	entries		= null;
+	private QuadTree[]				chTree		= null;
+	private int						dim			= 4;
+	private int						cnt			= 0;
 	
 	/**
 	 * 
 	 */
 	public QuadTree(int capacity, Region boundary) {
 		// TODO Auto-generated constructor stub
-		this.id			= G_ID ++;
-		this.capacity 	= capacity;
-		this.boundary 	= boundary;
-		this.points 	= new ArrayList<Point>();
-		this.values 	= new ArrayList<RW>();
+		this.id = G_ID++;
+		this.capacity = capacity;
+		this.boundary = boundary;
+		this.entries = new ArrayList<QuadEntry>();
 	}
 	
 	/**
@@ -63,17 +59,16 @@ public class QuadTree {
 	 * @param path
 	 * @return
 	 */
-	public boolean insert(Point p, RW value, ArrayList<QuadTree> path) {
-		if (!boundary.contains(p)) {
+	public boolean insert(QuadEntry entry, ArrayList<QuadTree> path) {
+		if (!boundary.contains(entry.getShape())) {
 			return false;
 		}		
 		cnt ++;
 		if (path != null) {
 			path.add(this);
 		}
-		if (points != null && points.size() <= capacity) {			
-			points.add(p);
-			values.add(value);
+		if (entries != null && entries.size() <= capacity) {			
+			entries.add(entry);
 			return true;
 		} else {			
 			if (chTree == null) {
@@ -83,22 +78,22 @@ public class QuadTree {
 					chTree[i] = new QuadTree(capacity, regions[i]);
 				}
 			}
-			if (points != null) {
-				for (int j = 0; j < points.size(); j ++) {
+			if (entries != null) {
+				for (int j = 0; j < entries.size(); j ++) {
 					boolean found = false;
 					for (int i = 0; i < dim; i ++) {
-						if (chTree[i].insert(points.get(j), values.get(j), path)) {
+						if (chTree[i].insert(entries.get(j), path)) {
 							found = true;
 							break;
 						}
 					}
 					if (!found) return false;
 				}
-				this.clearPoints();
+				this.clearEntries();
 			} 
 			boolean found = false;
 			for (int i = 0; i < dim; i ++) {
-				if (chTree[i].insert(p, value, path)) {
+				if (chTree[i].insert(entry, path)) {
 					found = true;
 					break;
 				}
@@ -113,8 +108,8 @@ public class QuadTree {
 	 * @param value
 	 * @return
 	 */
-	public boolean insert(Point p, RW value) {
-		return insert(p, value, null);
+	public boolean insert(QuadEntry entry) {
+		return insert(entry, null);
 	}
 	
 	public static Region[] subDivide(Region boundary) {
@@ -147,8 +142,8 @@ public class QuadTree {
 		return regions;
 	}
 	
-	public boolean remove(Point p, ArrayList<QuadTree> path) {
-		if (!boundary.contains(p)) {
+	public boolean remove(QuadEntry entry, ArrayList<QuadTree> path) {
+		if (!boundary.contains(entry.getShape())) {
 			return false;
 		}
 		
@@ -156,11 +151,10 @@ public class QuadTree {
 		if (path != null) {
 			path.add(this);
 		}
-		if (points != null) {
-			for (int i = 0; i < points.size(); i ++) {
-				if (points.get(i).equals(p)) {
-					points.remove(i);
-					values.remove(i);
+		if (entries != null) {
+			for (int i = 0; i < entries.size(); i ++) {
+				if (entries.get(i).getShape().equals(entry.getShape())) {
+					entries.remove(i);
 					return true;
 				}
 			}
@@ -172,18 +166,16 @@ public class QuadTree {
 			
 			boolean suc = false;
 			for (int i = 0; i < dim; i ++) {
-				if (chTree[i].remove(p, path)) {
+				if (chTree[i].remove(entry, path)) {
 					suc = true;
 					break;
 				}
 			}
 			
 			if (cnt <= capacity / 2) {
-				points = new ArrayList<Point>();
-				values = new ArrayList<RW>();
+				entries = new ArrayList<QuadEntry>();
 				for (int i = 0; i < dim; i ++) {
-					points.addAll(chTree[i].points);
-					values.addAll(chTree[i].values);
+					entries.addAll(chTree[i].entries);
 					chTree[i].clear();
 					chTree[i] = null;
 				}
@@ -199,8 +191,8 @@ public class QuadTree {
 	 * @param id
 	 * @return
 	 */
-	public boolean remove(Point p) {
-		return remove(p, null);
+	public boolean remove(QuadEntry entry) {
+		return remove(entry, null);
 	}
 	
 	/**
@@ -209,7 +201,7 @@ public class QuadTree {
 	public void clear() {
 		id = -1;
 		boundary = null;
-		clearPoints();
+		clearEntries();
 		if (chTree != null) {
 			for (int i = 0; i < dim; i ++) {
 				chTree[i].clear();
@@ -223,9 +215,8 @@ public class QuadTree {
 	 * Clear the points and values.
 	 * 
 	 * */
-	public void clearPoints() {
-		points = null;
-		values = null;
+	public void clearEntries() {
+		entries = null;
 	}
 	
 	public static void queryStrategy(QuadTree tree, final IQueryStrategyQT qs) {
@@ -258,8 +249,8 @@ public class QuadTree {
 		return dim;
 	}
 	
-	public ArrayList<Point> getPoints() {
-		return points;
+	public ArrayList<QuadEntry> getEntries() {
+		return entries;
 	}	
 
 	public String toString() {
@@ -274,11 +265,11 @@ public class QuadTree {
 		sb.append("@" + id + "\n");
 		sb.append(indent); 
 		sb.append(boundary + "\n");
-		if (points != null) {
+		if (entries != null) {
 			sb.append(indent + "[");
-			for (int i = 0; i < points.size(); i ++) {
+			for (int i = 0; i < entries.size(); i ++) {
 				if (i != 0) sb.append(", ");
-				sb.append(points.get(i));
+				sb.append(entries.get(i).getShape());
 			}
 			sb.append("]\n");
 		}
@@ -312,23 +303,19 @@ public class QuadTree {
 		this.chTree = chTree;
 	}
 	
-	public ArrayList<RW> getValues() {
-		return values;
-	}
-	
-	public RW getValue(int i) {
-		if (i >= values.size()) {
+	public QuadEntry getEntry(int i) {
+		if (i >= entries.size()) {
 			throw new IllegalStateException("The i is out of array.");
 		}
-		return values.get(i);
+		return entries.get(i);
 	}
 	
-	public void setValues(ArrayList<RW> values) {
-		this.values = values;
+	public void setEntries(ArrayList<QuadEntry> entries) {
+		this.entries = entries;
 	}
 	
-	public void setValue(int i, RW value) {
-		this.values.set(i, value);
+	public void setEntry(int i, QuadEntry entry) {
+		this.entries.set(i, entry);
 	}
 	
 	public int getCnt() {
@@ -352,8 +339,8 @@ public class QuadTree {
 			if (first.tree != null) {
 				QuadTree tree = first.tree;
 				if (tree.chTree == null) { // leaf
-					for (int i = 0; i < tree.points.size(); ++i) {
-						queue.add(new NNEntry(tree.points.get(i), query));
+					for (int i = 0; i < tree.entries.size(); ++i) {
+						queue.add(new NNEntry(tree.entries.get(i), query));
 					}
 				} else {
 					for (int i = 0; i < tree.chTree.length; ++i) {
@@ -363,7 +350,7 @@ public class QuadTree {
 			} else {
 				if (count >= k && first.minDist > knearest) break;
 				
-				v.visitPoint(first.point);
+				v.visitEntry(first.entry);
 				count++;
 				knearest = first.minDist;
 			}
@@ -372,7 +359,7 @@ public class QuadTree {
 	
 	class NNEntry implements Comparable<NNEntry>{
 		QuadTree tree = null;
-		Point point = null;
+		QuadEntry entry = null;
 		double minDist = 0;
 		
 		public NNEntry(QuadTree _tree, IShape query) {
@@ -380,9 +367,9 @@ public class QuadTree {
 			minDist = query.getMinimumDistance(tree.getBoundary());
 		}
 		
-		public NNEntry(Point _point, IShape query) {
-			point = _point;
-			minDist = query.getMinimumDistance(point);
+		public NNEntry(QuadEntry _entry, IShape query) {
+			entry = _entry;
+			minDist = query.getMinimumDistance(entry.getShape());
 		}
 
 		@Override
@@ -390,6 +377,25 @@ public class QuadTree {
 			if (minDist < o.minDist) return -1;
 			else if (minDist > o.minDist) return 1;
 			else return 0;
+		}
+	}
+	
+	public boolean checkCount() {
+		if (chTree == null) return true;
+		else {
+			int tmp = 0;
+			for (int i = 0; i < getDim(); ++i) {
+				if (!chTree[i].checkCount()) {
+					System.err.println(chTree[i]);
+					return false;
+				}
+				tmp += chTree[i].getCnt();
+			}
+			if (tmp != getCnt()) {
+				System.err.println(this);
+				return false;
+			}
+			return true;
 		}
 	}
 	
