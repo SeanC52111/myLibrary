@@ -343,12 +343,12 @@ public class QuadTree {
 			if (first.tree != null) {
 				QuadTree tree = first.tree;
 				if (tree.chTree == null) { // leaf
-					for (int i = 0; i < tree.entries.size(); ++i) {
+					for (int i = 0; i < tree.cnt; ++i) {
 						queue.add(new NNEntry(tree.entries.get(i), query));
 					}
 				} else {
 					for (int i = 0; i < tree.chTree.length; ++i) {
-						queue.add(new NNEntry(tree.chTree[i], query));
+						if (tree.chTree[i] != null) queue.add(new NNEntry(tree.chTree[i], query));
 					}
 				}
 			} else {
