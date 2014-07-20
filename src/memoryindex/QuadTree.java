@@ -7,6 +7,7 @@ import io.IO;
 
 import java.util.ArrayList;
 import java.util.PriorityQueue;
+import java.util.Stack;
 
 import math.MathPoint;
 import spatialindex.IShape;
@@ -26,17 +27,20 @@ public class QuadTree {
 	private Region					boundary	= null;
 	private ArrayList<QuadEntry>	entries		= null;
 	private QuadTree[]				chTree		= null;
-	private int						dim			= 4;
+	private int						dim			= 0;
+	private int						division 	= 0;
 	private int						cnt			= 0;
 	
 	/**
 	 * 
 	 */
-	public QuadTree(int capacity, Region boundary) {
+	public QuadTree(int _dim, int _capacity, Region _boundary) {
 		// TODO Auto-generated constructor stub
 		this.id = G_ID++;
-		this.capacity = capacity;
-		this.boundary = boundary;
+		this.dim = _dim;
+		this.division = 1 << dim;
+		this.capacity = _capacity;
+		this.boundary = _boundary;
 		this.entries = new ArrayList<QuadEntry>();
 	}
 	
@@ -72,16 +76,16 @@ public class QuadTree {
 			return true;
 		} else {			
 			if (chTree == null) {
-				chTree = new QuadTree[dim];
+				chTree = new QuadTree[division];
 				Region[] regions = subDivide(boundary);
-				for (int i = 0; i < dim; i ++) {
-					chTree[i] = new QuadTree(capacity, regions[i]);
+				for (int i = 0; i < division; i ++) {
+					chTree[i] = new QuadTree(dim, capacity, regions[i]);
 				}
 			}
 			if (entries != null) {
 				for (int j = 0; j < entries.size(); j ++) {
 					boolean found = false;
-					for (int i = 0; i < dim; i ++) {
+					for (int i = 0; i < division; i ++) {
 						if (chTree[i].insert(entries.get(j), path)) {
 							found = true;
 							break;
@@ -92,7 +96,7 @@ public class QuadTree {
 				this.clearEntries();
 			} 
 			boolean found = false;
-			for (int i = 0; i < dim; i ++) {
+			for (int i = 0; i < division; i ++) {
 				if (chTree[i].insert(entry, path)) {
 					found = true;
 					break;
@@ -165,7 +169,7 @@ public class QuadTree {
 			}
 			
 			boolean suc = false;
-			for (int i = 0; i < dim; i ++) {
+			for (int i = 0; i < division; i ++) {
 				if (chTree[i].remove(entry, path)) {
 					suc = true;
 					break;
@@ -174,7 +178,7 @@ public class QuadTree {
 			
 			if (cnt <= capacity / 2) {
 				entries = new ArrayList<QuadEntry>();
-				for (int i = 0; i < dim; i ++) {
+				for (int i = 0; i < division; i ++) {
 					entries.addAll(chTree[i].entries);
 					chTree[i].clear();
 					chTree[i] = null;
@@ -203,7 +207,7 @@ public class QuadTree {
 		boundary = null;
 		clearEntries();
 		if (chTree != null) {
-			for (int i = 0; i < dim; i ++) {
+			for (int i = 0; i < division; i ++) {
 				chTree[i].clear();
 				chTree[i] = null;
 			}
@@ -249,6 +253,10 @@ public class QuadTree {
 		return dim;
 	}
 	
+	public int getDivision() {
+		return division;
+	}
+	
 	public ArrayList<QuadEntry> getEntries() {
 		return entries;
 	}	
@@ -279,7 +287,7 @@ public class QuadTree {
 			sb.append(" null\n");
 		} else {
 			sb.append("\n");
-			for (int i = 0; i < dim; i ++) {
+			for (int i = 0; i < division; i ++) {
 				if (chTree[i] != null) {
 					sb.append(chTree[i].toString(level + 1));
 				} else {
@@ -361,6 +369,29 @@ public class QuadTree {
 		}
 	}
 	
+	public void rangeQuery(final IShape query, final IVisitorQT v) {
+		Stack<QuadTree> st = new Stack<QuadTree>();
+		
+		if (getCnt() > 0 && query.intersects(getBoundary())) st.add(this);
+		
+		while (!st.empty()) {
+			QuadTree qt = st.pop();
+			if (qt.getChTrees() == null) { // leaf
+				for (int i = 0; i < qt.cnt; ++i) {
+					if (query.contains(qt.getEntry(i).getShape())) {
+						v.visitEntry(qt.getEntry(i));
+					}
+				}
+			} else {
+				for (int i = 0; i < qt.getDivision(); ++i) {
+					if (qt.getChTree(i).getCnt() > 0 && qt.getChTree(i).getBoundary().intersects(query)) {
+						st.add(qt.getChTree(i));
+					}
+				}
+			}
+		}
+	}
+	
 	class NNEntry implements Comparable<NNEntry>{
 		QuadTree tree = null;
 		QuadEntry entry = null;
@@ -388,7 +419,7 @@ public class QuadTree {
 		if (chTree == null) return true;
 		else {
 			int tmp = 0;
-			for (int i = 0; i < getDim(); ++i) {
+			for (int i = 0; i < division; ++i) {
 				if (!chTree[i].checkCount()) {
 					System.err.println(chTree[i]);
 					return false;

@@ -16,6 +16,8 @@ import spatialindex.Region;
 public class TestQuadTree {
 
 	static ArrayList<QuadEntry> entries = new ArrayList<QuadEntry>();
+	static ArrayList<QuadEntry> entriesMD = new ArrayList<QuadEntry>();
+	static int dim = 5;
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -23,11 +25,20 @@ public class TestQuadTree {
 		for (int i = 0; i < num; i ++) {
 			entries.add(new QuadEntry(i, new Point(new double[]{i, i}), null));
 		}
+		for (int i = 0; i < num; i ++) {
+			double[] corrds = new double[dim];
+			for (int j = 0; j < dim; ++j) {
+				corrds[j] = i;
+			}	
+			Point point = new Point(corrds);
+			entriesMD.add(new QuadEntry(i, point, null));
+		}
 	}
 
 	@Test
 	public void testInsertWithPath() {
-		QuadTree root = new QuadTree(4, new Region(new double[] {0, 0}, new double[] {16, 16}));
+		System.out.println("-----insert path-----");
+		QuadTree root = new QuadTree(2, 4, new Region(new double[] {0, 0}, new double[] {16, 16}));
 		for (int i = 0; i < entries.size(); i ++) {
 			ArrayList<QuadTree> path = new ArrayList<QuadTree>();
 			if (!root.insert(entries.get(i), path)) {
@@ -39,6 +50,7 @@ public class TestQuadTree {
 //				}
 			}
 		}
+		System.out.println("---------------------");
 //		System.out.println(root);
 	}
 	
@@ -47,14 +59,24 @@ public class TestQuadTree {
 		double[] lCoords = new double[]{1, 2}, hCoords = new double[]{3, 4};
 		Region region = new Region(lCoords, hCoords);
 		Region[] regions = QuadTree.subDivide(region);
-		for (int i = 0; i < 4; i ++) {
-			System.out.println(regions[i]);
-		}
+//		for (int i = 0; i < 4; i ++) {
+//			System.out.println(regions[i]);
+//		}
 	}
+	
+//	@Test
+//	public void testRegionSubdivisionMD() {
+//		double[] lCoords = new double[]{0, 0, 0, 0, 0}, hCoords = new double[]{16, 16, 16, 16, 16};
+//		Region region = new Region(lCoords, hCoords);
+//		Region[] regions = QuadTree.subDivide(region);
+//		for (int i = 0; i < 1 << 5; i ++) {
+//			System.out.println(regions[i]);
+//		}
+//	}
 	
 	@Test
 	public void testInsert() {
-		QuadTree root = new QuadTree(4, new Region(new double[] {0, 0}, new double[] {16, 16}));
+		QuadTree root = new QuadTree(2, 4, new Region(new double[] {0, 0}, new double[] {16, 16}));
 		for (int i = 0; i < entries.size(); i ++) {			
 			if (!root.insert(entries.get(i))) {
 				System.out.println(i + " err!");
@@ -67,7 +89,7 @@ public class TestQuadTree {
 	
 	@Test
 	public void testRemove() {
-		QuadTree root = new QuadTree(4, new Region(new double[] {0, 0}, new double[] {16, 16}));
+		QuadTree root = new QuadTree(2, 4, new Region(new double[] {0, 0}, new double[] {16, 16}));
 		for (int i = 0; i < entries.size(); i ++) {			
 			if (!root.insert(entries.get(i))) {
 				System.out.println(i + " err!");
@@ -85,7 +107,8 @@ public class TestQuadTree {
 	
 	@Test 
 	public void testRange() {
-		QuadTree root = new QuadTree(4, new Region(new double[] {0, 0}, new double[] {16, 16}));
+		System.out.println("-----test range-----");
+		QuadTree root = new QuadTree(2, 4, new Region(new double[] {0, 0}, new double[] {16, 16}));
 		for (int i = 0; i < entries.size(); i ++) {			
 			if (!root.insert(entries.get(i))) {
 				System.out.println(i + " err!");
@@ -93,17 +116,46 @@ public class TestQuadTree {
 //				System.out.println(i + " inserted!");
 			}
 		}
-		RangeQueryStrategy qs = new RangeQueryStrategy(new Region((Point)entries.get(2).getShape(), (Point)entries.get(5).getShape()));
+		Region query = new Region((Point)entries.get(2).getShape(), (Point)entries.get(5).getShape());
+		RangeQueryStrategy qs = new RangeQueryStrategy(query);
 		QuadTree.queryStrategy(root, qs);
 		ArrayList<Integer> res = qs.getResult();
+		System.out.println("res in range:");
 		for (int i = 0; i < res.size(); i ++) {
 			System.out.println(res.get(i));
 		}
+		RQVisitor visitor = new RQVisitor();
+		root.rangeQuery(query, visitor);
+		System.out.println("-------------------");
+	}
+	
+	@Test 
+	public void testRangeMD() {
+		System.out.println("-----test rangeMD-----");
+		QuadTree root = new QuadTree(dim, 4, new Region(new double[] {0, 0, 0, 0, 0}, new double[] {16, 16, 16, 16, 16}));
+		for (int i = 0; i < entriesMD.size(); i ++) {			
+			if (!root.insert(entriesMD.get(i))) {
+				System.out.println(i + " err!");
+			} else {
+//				System.out.println(i + " inserted!");
+			}
+		}
+		Region query = new Region((Point)entriesMD.get(2).getShape(), (Point)entriesMD.get(5).getShape());
+		RangeQueryStrategy qs = new RangeQueryStrategy(query);
+		QuadTree.queryStrategy(root, qs);
+		ArrayList<Integer> res = qs.getResult();
+		System.out.println("res in range:");
+		for (int i = 0; i < res.size(); i ++) {
+			System.out.println(res.get(i));
+		}
+		RQVisitor visitor = new RQVisitor();
+		root.rangeQuery(query, visitor);
+		System.out.println("-------------------");
 	}
 	
 	@Test
 	public void testKNN() {
-		QuadTree root = new QuadTree(4, new Region(new double[] {0, 0}, new double[] {16, 16}));
+		QuadTree root = new QuadTree(2, 4, new Region(new double[] {0, 0}, new double[] {16, 16}));
 		for (int i = 0; i < entries.size(); i ++) {			
 			if (!root.insert(entries.get(i))) {
 				System.out.println(i + " err!");
@@ -118,8 +170,24 @@ public class TestQuadTree {
 	}
 	
 	@Test
+	public void testKNNMD() {
+		QuadTree root = new QuadTree(dim, 4, new Region(new double[] {0, 0, 0, 0, 0}, new double[] {16, 16, 16, 16, 16}));
+		for (int i = 0; i < entriesMD.size(); i ++) {			
+			if (!root.insert(entriesMD.get(i))) {
+				System.out.println(i + " err!");
+			} else {
+//				System.out.println(i + " inserted!");
+			}
+		}
+		Point query = new Point(new double[] {8, 8, 8, 8, 8});
+		root.nearestNeighborQuery(3, query, new NNVisitor());
+		System.out.println("----");
+		root.nearestNeighborQuery(5, query, new NNVisitor());
+	}
+	
+	@Test
 	public void testCount() {
-		QuadTree root = new QuadTree(4, new Region(new double[] {0, 0}, new double[] {16, 16}));
+		QuadTree root = new QuadTree(2, 4, new Region(new double[] {0, 0}, new double[] {16, 16}));
 		for (int i = 0; i < entries.size(); i ++) {			
 			if (!root.insert(entries.get(i))) {
 				System.out.println(i + " err!");
@@ -130,11 +198,36 @@ public class TestQuadTree {
 		System.out.println(root.checkCount());
 	}
 	
+	@Test
+	public void testCountMD() {
+		System.out.println("--------test count------");
+		QuadTree root = new QuadTree(5, 4, new Region(new double[] {0, 0, 0, 0, 0}, new double[] {16, 16, 16, 16, 16}));
+		for (int i = 0; i < entriesMD.size(); i ++) {			
+			if (!root.insert(entriesMD.get(i))) {
+				System.out.println(i + " err!");
+			} else {
+//				System.out.println(i + " inserted!");
+			}
+		}
+		System.out.println(root.checkCount());
+		System.out.println("--------------------------");
+	}
+	
+	
 	class NNVisitor implements IVisitorQT {
 
 		@Override
 		public void visitEntry(QuadEntry entry) {
 			System.out.println(entry.getShape());
+		}
+		
+	}
+	
+	class RQVisitor implements IVisitorQT {
+
+		@Override
+		public void visitEntry(QuadEntry entry) {
+			System.out.println(entry.getId() + " : " + entry.getShape());
 		}
 		
 	}
@@ -185,4 +278,6 @@ public class TestQuadTree {
 			}
 		}
 	}
+	
+	
 }
