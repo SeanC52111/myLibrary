@@ -17,7 +17,7 @@ public class TestQuadTree {
 
 	static ArrayList<QuadEntry> entries = new ArrayList<QuadEntry>();
 	static ArrayList<QuadEntry> entriesMD = new ArrayList<QuadEntry>();
-	static int dim = 5;
+	static int dim = 6;
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -132,7 +132,7 @@ public class TestQuadTree {
 	@Test 
 	public void testRangeMD() {
 		System.out.println("-----test rangeMD-----");
-		QuadTree root = new QuadTree(dim, 4, new Region(new double[] {0, 0, 0, 0, 0}, new double[] {16, 16, 16, 16, 16}));
+		QuadTree root = new QuadTree(dim, 4, new Region(new double[] {0, 0, 0, 0, 0, 0}, new double[] {16, 16, 16, 16, 16, 16}));
 		for (int i = 0; i < entriesMD.size(); i ++) {			
 			if (!root.insert(entriesMD.get(i))) {
 				System.out.println(i + " err!");
@@ -171,7 +171,7 @@ public class TestQuadTree {
 	
 	@Test
 	public void testKNNMD() {
-		QuadTree root = new QuadTree(dim, 4, new Region(new double[] {0, 0, 0, 0, 0}, new double[] {16, 16, 16, 16, 16}));
+		QuadTree root = new QuadTree(dim, 1<<dim, new Region(new double[] {0, 0, 0, 0, 0, 0}, new double[] {16, 16, 16, 16, 16, 16}));
 		for (int i = 0; i < entriesMD.size(); i ++) {			
 			if (!root.insert(entriesMD.get(i))) {
 				System.out.println(i + " err!");
@@ -179,7 +179,7 @@ public class TestQuadTree {
 //				System.out.println(i + " inserted!");
 			}
 		}
-		Point query = new Point(new double[] {8, 8, 8, 8, 8});
+		Point query = new Point(new double[] {8, 8, 8, 8, 8, 8});
 		root.nearestNeighborQuery(3, query, new NNVisitor());
 		System.out.println("----");
 		root.nearestNeighborQuery(5, query, new NNVisitor());
@@ -201,7 +201,7 @@ public class TestQuadTree {
 	@Test
 	public void testCountMD() {
 		System.out.println("--------test count------");
-		QuadTree root = new QuadTree(5, 4, new Region(new double[] {0, 0, 0, 0, 0}, new double[] {16, 16, 16, 16, 16}));
+		QuadTree root = new QuadTree(dim, 1<<dim, new Region(new double[] {0, 0, 0, 0, 0, 0}, new double[] {16, 16, 16, 16, 16, 16}));
 		for (int i = 0; i < entriesMD.size(); i ++) {			
 			if (!root.insert(entriesMD.get(i))) {
 				System.out.println(i + " err!");
