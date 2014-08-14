@@ -13,6 +13,19 @@ public class P {
 
 	public static int lineSeq = 50;
 	
+	public static void Print(int[] data) {
+		if (data == null) {
+			System.out.println("null");
+			return;
+		}
+		for (int i = 0; i < data.length; i ++) {
+			if (i != 0) System.out.print(", ");
+			if ((i + 1) % lineSeq == 0) System.out.println();
+			System.out.print(data[i]);
+		}
+		System.out.println();
+	}
+	
 	public static void Print(ArrayList<Integer> data) {
 		for (int i = 0; i < data.size(); i ++) {
 			if (i != 0) System.out.print(", ");
