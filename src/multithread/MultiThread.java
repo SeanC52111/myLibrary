@@ -40,7 +40,7 @@ public class MultiThread {
 						tasks[curid].run();
 						if (verbose) {
 							if ((curid + 1) % mod == 0) {
-								System.out.println((curid + 1.0) / totalNum * 100 + "%");
+								System.out.printf("%.2f%c\n", (curid + 1.0) / totalNum * 100, '%');
 							}
 						}
 					}
