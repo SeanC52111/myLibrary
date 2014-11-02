@@ -14,9 +14,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 
-import sun.awt.image.ByteArrayImageSource;
-import io.Out;
-
 
 public class IO {
 
@@ -162,7 +159,7 @@ public class IO {
     	return 0;
     }
     
-	public static int[] readIntArrays(DataInputStream ds){
+	public static int[] readIntArray(DataInputStream ds){
 		int len;
 		int[] a = null;
 		try {
@@ -170,6 +167,22 @@ public class IO {
 			a = new int[len];
 			for(int i = 0; i < len; i++){
 				a[i] = ds.readInt();
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return a;
+	}
+	
+	public static double[] readDoubleArray(DataInputStream ds){
+		int len;
+		double[] a = null;
+		try {
+			len = ds.readInt();
+			a = new double[len];
+			for(int i = 0; i < len; i++){
+				a[i] = ds.readDouble();
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -224,7 +237,7 @@ public class IO {
 		return false;
 	}
 	
-	public static void writeIntArrays(DataOutputStream ds, int[] a){
+	public static void writeIntArray(DataOutputStream ds, int[] a){
 		try {
 			ds.writeInt(a.length);
 			for(int v : a){
@@ -236,11 +249,35 @@ public class IO {
 		}
 	}
 	
-	public static void writeIntArrays(DataOutputStream ds, Integer[] a){
+	public static void writeIntArray(DataOutputStream ds, Integer[] a){
 		try {
 			ds.writeInt(a.length);
 			for(int v : a){
 				ds.writeInt(v);
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public static void writeDoubleArray(DataOutputStream ds, double[] a){
+		try {
+			ds.writeInt(a.length);
+			for(double v : a){
+				ds.writeDouble(v);
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public static void writeIntArray(DataOutputStream ds, Double[] a){
+		try {
+			ds.writeInt(a.length);
+			for(double v : a){
+				ds.writeDouble(v);
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
